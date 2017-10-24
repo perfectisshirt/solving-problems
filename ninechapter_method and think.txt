@@ -16,4 +16,11 @@ first version: I did not think one thing that declare listnode in while loop.当
 first version:从首节点出发寻找从哪一个结点开始旋转，然后将旋转后的结点的next指向head，从而返回最终的链表。但是出现了TLE。
 second version:使用双指针的思想，找到需要反转的第一个结点的前结点为tail，后一个结点为head,使用dummy.next连接需要反转的第一个结点，返回dummy.next即可。
 9.reorder list
-
+10.reverse integer
+first version:转化成字符串，然后使用字符串进行reverse。
+second version: 数学计算方法，但是需要考虑到int类型的溢出问题,通常想到的方式是让结果设置为long型，然后和Integer.max_value and Integer.min_value比较。还有一种方法就是反向再比较一遍，如果结果相同则没有溢出。
+11.intersection of two arrays
+first version:首先将两个数组排序，然后依次对比其中的数字，如果相同则放到一个temp数组中，最后将temp数组中的数传递给结果数组。因为是共同的元素，所以我们设置的temp数组的大小肯定比两个数组中的任意一个都要小于等于。要注意temp数组的下标index的赋值范围，是temp[index-1]!=nums1[i];判断语句中的index==0是为了防止后面的index-1不会出现outofboundsexception.
+12.intersection of two arrays ii
+这题比第一题简单，并不需要判断在最后的数组中是否会出现重复的数字。
+13
