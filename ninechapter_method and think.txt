@@ -1,0 +1,19 @@
+1.reverse nodes in k-group（再做一遍）
+first version:  reverse every k nodes,find the kth node then reverse them. the important thing is to how to connect them.
+2. partition list（再做一遍）
+first version: create two listnode, one is less than target and the other is greater or equal than target, last step is to connect two listnodes.
+3.merge two sorted array
+compare two arrays' numbers one by one then get the final array.
+4.merge two sorted lists
+like merge two sorted array
+5.reverse linkedlist ii
+just part of reverse nodes in k-group, reverse a list from m to n
+6.swap two nodes in linked list（再做一遍）
+first version: find v1 and v2 point first and their pre nodes.但是需要考虑v1pre和v2pre的位置以及两者是否为相邻结点。
+7.swap nodes in pairs（再做一遍）
+first version: I did not think one thing that declare listnode in while loop.当两个node需要交换并且重复进行的时候可以考虑放在while循环里，要不然就没办法迭代了。
+8.rotate list(再做一遍）
+first version:从首节点出发寻找从哪一个结点开始旋转，然后将旋转后的结点的next指向head，从而返回最终的链表。但是出现了TLE。
+second version:使用双指针的思想，找到需要反转的第一个结点的前结点为tail，后一个结点为head,使用dummy.next连接需要反转的第一个结点，返回dummy.next即可。
+9.reorder list
+
