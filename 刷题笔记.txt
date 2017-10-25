@@ -36,3 +36,5 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 思路一：使用hashmap，将arraylist中的数和这个数出现的次数存放在hashmap中，然后比较他们的次数取最大值。只要题目中确定有且只有一个这样的值，这个方法都适用。majority number iii就是一个例子。
 思路二：
 18.majority number iii
+19.merge sorted array
+利用从后往前的
