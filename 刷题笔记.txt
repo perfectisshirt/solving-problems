@@ -1,3 +1,4 @@
+LinkedList:
 1.reverse nodes in k-group（再做一遍）
 first version:  reverse every k nodes,find the kth node then reverse them. the important thing is to how to connect them.
 2. partition list（再做一遍）
@@ -37,4 +38,17 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 思路二：
 18.majority number iii
 19.merge sorted array
-利用从后往前的
+利用从后往前的思想将两个数组的最后一个数字进行比较，依次向前进行比较。之所以这么做是因为题目给了提示A数组足够大。
+
+动态规划：
+20.paint fence (再做一遍)
+0个fence为0，1个是k，2个fence，如果颜色一样是K,如果颜色不一样是k*(k-1),所以是k*k, 3个fence，如果前两个颜色一样，是k*(k-1),如果第三个和前面两个任意一种颜色相同且前面两个不一样颜色，则回到了第一种情况，如果三个颜色都不一样，则k*(k-1)*(k-2),最后结果是k*k*(k-1),总结来说就是新加入的这个栅栏是要比较和前面的相同还是不同，(k-1)*(same+diff).same的初始值是当只有一个fence的时候，和前一个颜色相同，但是前一个为0，所以初始值为0，diff的初始值就应该是k。
+21.longest common subsequence（再做一遍）
+要和substring区分开来，substring要求是要consecutive的。考虑最长公共子序列问题如何分解成子问题，设A=“a0，a1，…，am-1”，B=“b0，b1，…，bm-1”，并Z=“z0，z1，…，zk-1”为它们的最长公共子序列。不难证明有以下性质：
+
+（1） 如果am-1=bn-1，则zk-1=am-1=bn-1，且“z0，z1，…，zk-2”是“a0，a1，…，am-2”和“b0，b1，…，bn-2”的一个最长公共子序列；
+
+（2） 如果am-1!=bn-1，则若zk-1!=am-1，蕴涵“z0，z1，…，zk-1”是“a0，a1，…，am-2”和“b0，b1，…，bn-1”的一个最长公共子序列；
+
+（3） 如果am-1!=bn-1，则若zk-1!=bn-1，蕴涵“z0，z1，…，zk-1”是“a0，a1，…，am-1”和“b0，b1，…，bn-2”的一个最长公共子序列。
+22.
