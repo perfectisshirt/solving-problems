@@ -1,35 +1,55 @@
 LinkedList:
 1.reverse nodes in k-group（再做一遍）
 first version:  reverse every k nodes,find the kth node then reverse them. the important thing is to how to connect them.
+second version:第二遍做的时候不知道如何让k个结点依次往右平移，也就是while(true).在循环的k执行中返回值是n1并不是head.是因为每一次开始循环的时候head所在的位置就像是第一次循环时的dummy.
+
 2. partition list（再做一遍）
 first version: create two listnode, one is less than target and the other is greater or equal than target, last step is to connect two listnodes.
+second version: 记得在遍历完了之后让最后一个结点的next设置为null.
+
 3.merge two sorted array
 compare two arrays' numbers one by one then get the final array.
+
 4.merge two sorted lists
 like merge two sorted array
+
 5.reverse linkedlist ii
 just part of reverse nodes in k-group, reverse a list from m to n
+
 6.swap two nodes in linked list（再做一遍）
-first version: find v1 and v2 point first and their pre nodes.但是需要考虑v1pre和v2pre的位置以及两者是否为相邻结点。
+first version: find v1 and v2 point first and their pre nodes.但是需要考虑v1pre和v2pre的位置以及两者是否为相邻结点。如果两个节点不是相邻的，v1和v2谁在前面没有关系，但是如果两者相邻的话就需要判断谁在前面了。
+second version:找到v2pre和v1pre的时候只需要对其判断是不是为Null就好，不需要对他的next判断。
+
 7.swap nodes in pairs（再做一遍）
 first version: I did not think one thing that declare listnode in while loop.当两个node需要交换并且重复进行的时候可以考虑放在while循环里，要不然就没办法迭代了。
+second version: head.next!=null&&head.next.next!=null，是为了保证后面一定有两个节点，要不然会出现空指针错误。
+
 8.rotate list(再做一遍）
 first version:从首节点出发寻找从哪一个结点开始旋转，然后将旋转后的结点的next指向head，从而返回最终的链表。但是出现了TLE。
 second version:使用双指针的思想，找到需要反转的第一个结点的前结点为tail，后一个结点为head,使用dummy.next连接需要反转的第一个结点，返回dummy.next即可。
+third version: 只需要知道两段节点序列的最后一个结点就行了。
+
 9.reorder list
+
 10.reverse integer
 first version:转化成字符串，然后使用字符串进行reverse。
 second version: 数学计算方法，但是需要考虑到int类型的溢出问题,通常想到的方式是让结果设置为long型，然后和Integer.max_value and Integer.min_value比较。还有一种方法就是反向再比较一遍，如果结果相同则没有溢出。
-11.intersection of two arrays
+
+11.intersection of two arrays(再做一次)
 first version:首先将两个数组排序，然后依次对比其中的数字，如果相同则放到一个temp数组中，最后将temp数组中的数传递给结果数组。因为是共同的元素，所以我们设置的temp数组的大小肯定比两个数组中的任意一个都要小于等于。要注意temp数组的下标index的赋值范围，是temp[index-1]!=nums1[i];判断语句中的index==0是为了防止后面的index-1不会出现outofboundsexception.
+
 12.intersection of two arrays ii
 这题比第一题简单，并不需要判断在最后的数组中是否会出现重复的数字。
+
 13.linkedlist cycle
 设置快慢指针来判断是否有环，slow = head, fast = head.next; slow = slow.next, fast = fast.next.next;如果快指针都遍历结束了出现了null，则false,如果出现了slow==fast,返回true;
+
 14. linked list cycle ii
 这一题的难点是没办法确定开始循环的点，上一题我们只是确定了他们第一次相遇的地方，所以在上一题的基础上我们只需要再从head出发，和slow相遇就是循环开始的点。这一题特别要注意的点就是||符号，这个是按照从左往右进行判断的，所以如果先判断fast.next==null就会发生错误。从head出发到循环开始的地方和两个指针第一次相遇的点到循环开始的地方是一样长的，所以可以通过head!=slow.next来判断，最后返回head即可。
-15.maximum subarray
+
+15.maximum subarray(再做一遍)
 用到了动态规划的方法，kadane algorithms，假设存在A[0,i]Max[I]就是0到I的最大区间，要求要一个Max[I+1]=Max[I]+A[I+1],但是要保证这个值是大于零的。
+
 16.majority number
 思路一：利用java的特性，使用Collections.sort()对arraylist进行排序，只需要取出最中间的数就行了，因为题目说明了肯定存在。
 思路二：对arraylist进行遍历，如果下一个数和上一个数是相同的，计数器加一。利用的原理就是如果一个数出现的次数高于其他的数字的话，那么最后赋值的一定是那个majority number.
@@ -64,11 +84,23 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 
 
 深度搜索(DFS):
+dfs的记忆存储方法一般都可以使用动态规划来解决。
 1.subsets
 这道题有几点要注意：首先是要判断其是不要求排好序的数组，如果需要排好序的在开始的时候就要Arrays.sort(nums).在dfs的过程中if(startindex==nums.length)因为题目中确定了[]也是其中的一个子集，所以不用加这一条判断。recursion的过程中i+1的选择，是因为不能出现重复的元素，所以要从下一个元素开始遍历。
 2.subsets ii
 这道题和之前的题目比就是要排除重复元素，所以在dos的过程中if(startindex!=i&&nums[i]==nums[i-1]),continue.如果没有i!=startindex就会出现越界的错误。
 3.split string
+首先要注意题目中要求分割的字符要么一个要么两个，也就是要dfs中添加判断i<startindex+2,所以取的substring就应该是startindex,i+1.还有一个要注意的问题就是判断条件是startindex==s.length();并不是sub.size()，因为子数组的大小在for循环的时候有过判断了，i<s.length().
 4.permutations
 这里的就不需要startindex这个循环的标志了，因为输出的长度必须是字符串的长度，所以只需要从头到尾遍历一遍就行了。在循环的时候判断语句应该是list.contains(nums[i]),这是在回溯的时候确定判断当前的数字有没有被添加过。
 5.permutations ii
+
+
+
+分治算法(divide and conquer)
+1. binary tree maximum path sum
+
+
+array数组:
+1.maximum subarray（再做一遍）
+这一题刚开始做的时候出现了一个误区，发现的值如果是负数就不加，这样找到的数并不能保证是连续的。这里应该舍弃的值应该是前面的数的和为负数将其舍弃也就是赋值为0，然后从后一个数开始计算。
