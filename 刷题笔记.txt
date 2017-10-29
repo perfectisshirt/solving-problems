@@ -100,7 +100,17 @@ dfs的记忆存储方法一般都可以使用动态规划来解决。
 分治算法(divide and conquer)
 1. binary tree maximum path sum
 
+2.maximum depth of binary tree
+这道题我们要和面试官问清楚，root点算depth0还是1。每次都看该点的左右子树的节点是不是为null,递归的跳出条件就是root==null。
+
+3.
+
 
 array数组:
 1.maximum subarray（再做一遍）
 这一题刚开始做的时候出现了一个误区，发现的值如果是负数就不加，这样找到的数并不能保证是连续的。这里应该舍弃的值应该是前面的数的和为负数将其舍弃也就是赋值为0，然后从后一个数开始计算。
+
+
+Bfs:
+1.binary tree level order traversal
+因为size的值是变化的，所以需要的循环之前就计算出来。按层读，所以有一个for循环。
