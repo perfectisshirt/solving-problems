@@ -97,20 +97,50 @@ dfs的记忆存储方法一般都可以使用动态规划来解决。
 
 
 
-分治算法(divide and conquer)
-1. binary tree maximum path sum
-
-2.maximum depth of binary tree
-这道题我们要和面试官问清楚，root点算depth0还是1。每次都看该点的左右子树的节点是不是为null,递归的跳出条件就是root==null。
-
-3.
-
 
 array数组:
 1.maximum subarray（再做一遍）
 这一题刚开始做的时候出现了一个误区，发现的值如果是负数就不加，这样找到的数并不能保证是连续的。这里应该舍弃的值应该是前面的数的和为负数将其舍弃也就是赋值为0，然后从后一个数开始计算。
 
 
-Bfs:
-1.binary tree level order traversal
-因为size的值是变化的，所以需要的循环之前就计算出来。按层读，所以有一个for循环。
+tree:
+1.add and search word:
+trie tree的题目
+2.implement trie
+
+
+binary tree and divide & conquer:
+1.binary tree preorder traversal:（再做一遍）
+这个简单的题目有几种解法，并且都是重要的思想，第一个就是recursion，这个比较简单想到。第二是divide and conquer。还有一个就是non-recursion。和这题相似的还有ignorer and after order.他们的non-recursion都是需要背诵的。
+
+2. binary tree maximum path sum
+divide&conquer 或者 traverse 都可以做。在java里面，如果在函数中不是使用了对象进行数据传递可以使用全局变量来解决这个问题，比如int类型的数据。
+
+3.binary tree paths
+这题也可以使用两种方法，一个是traverse一个是d&c. 使用d&c的时候要注意判断如果left and right are all null, if(results.size()==0)这种情况。
+
+4.minimum subtree
+因为这道题我们需要知道的是最小子树的根结点，所以我们需要计算的值有子树的结点和还有根节点，也就是说这是一个复合的结构，我们需要构建一个新的class来存储。
+
+5.balanced binary tree
+一个数的平衡是要左子树平衡，右子树平衡同时根节点也要平衡。
+
+6.validate binary search tree（再做一遍）
+left.val<root.val<=right.val.层级遍历是一个不下降的数组，但是一个不下降的数组不一定是binary search tree, like 1,1,1. 根据定义我们知道我们只需要考虑左树，右树还有根节点这三个部分，然后将左树和右树继续划分，因此我们可以使用divide and conquer.我们在判断的时候要注意这里的left和right只是两个子树集合，因此我们只需判断left.isBST和right.isBST是不是true就可以了。
+
+7.convert binary search tree to doubly linked list(再做一遍)
+这个双链表初始化的时候一个是first开头一个是链表的结尾last,如果我们知道left是空，那么results.first = node，也就是说这时候root就作为第一个节点，相反，root就是最后一个节点。如果不是空，就进行链表的插入操作。
+
+8.flatten binary tree to linked list（再做一遍）
+根据题意走一遍就可以
+
+9.binary search tree iterator(再做一遍)
+这题基本是使用了non-recursion的方法。
+ 
+10.in-order successor in binary search tree
+我的第一反应是将这个bst按照inorder构成一个双链表，然后查找出目标节点的下一个节点就行了。
+
+
+11.search range in binary search tree
+12.insert node in a binary search tree
+13.remove node in a binary search tree
