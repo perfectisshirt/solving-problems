@@ -137,10 +137,13 @@ left.val<root.val<=right.val.层级遍历是一个不下降的数组，但是一
 9.binary search tree iterator(再做一遍)
 这题基本是使用了non-recursion的方法。
  
-10.in-order successor in binary search tree
+10.in-order successor in binary search tree（再做一遍）
 我的第一反应是将这个bst按照inorder构成一个双链表，然后查找出目标节点的下一个节点就行了。
-
+还有一种方法是分情况讨论，如果要找的P点就是根节点，那么successor就是他右子树的最左边的点，如果p点在左边，也就是只要p.val<root.val，那么root=root.left,successor = root.如果在右边，root=root.right。
 
 11.search range in binary search tree
+直接的方法就是对树进行inorder traverse，然后判断当前的点是不是满足条件，满足就放到arraylist里面。因为题目要求是结果是ascending order,所以想到是inorder traverse.但是一定要注意的是在helper中要对当前的点进行判断，判断是不是null，否则会出错。 为了减少遍历次数，可以判断if(root.val>k1) helper(root.left,k1,k2).可以将arraylist 对象设置成全局变量，减少迭代变量。
+
 12.insert node in a binary search tree
+
 13.remove node in a binary search tree
