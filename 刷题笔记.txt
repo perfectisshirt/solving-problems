@@ -145,5 +145,22 @@ left.val<root.val<=right.val.层级遍历是一个不下降的数组，但是一
 直接的方法就是对树进行inorder traverse，然后判断当前的点是不是满足条件，满足就放到arraylist里面。因为题目要求是结果是ascending order,所以想到是inorder traverse.但是一定要注意的是在helper中要对当前的点进行判断，判断是不是null，否则会出错。 为了减少遍历次数，可以判断if(root.val>k1) helper(root.left,k1,k2).可以将arraylist 对象设置成全局变量，减少迭代变量。
 
 12.insert node in a binary search tree
+第一感觉就是找插入结点的前一个结点，然后判断要插入的结点是在左边还是右边就可以了。
 
-13.remove node in a binary search tree
+13.remove node in a binary search tree（再做一遍）
+整体思路应该是将找到的目标节点和他的左子树进行交换，然后一直交换将要删除的点移动到叶子节点，然后让其等于空就可以了。要注意如果要删除的结点是根节点的话，我们就需要设置一个dummy结点来防止这样的情况。并且查找结点的时候要进行结点的交换，所以不仅要找到目标节点，还需要找到这个结点的parent.
+
+14.binary tree path sum
+虽然这题是binary tree，但是看完题目的要求可以肯定是用dfs来解题。有一点需要注意的是，root.val是在recursion之前就被加进去了，因为如果在过程中会被加上很多次，结果也就是错误的。
+
+15.binary tree path sum ii（再做一遍）
+这题的难点就在于如何确定起始点和结束的点。有一种方法是从后往前进行遍历，也就是说先往list中从root开始遍历，往list中放值，但是是从最后一个数一次往前遍历，如果找到和等于target的，就从此时的i开始一直到list.size()结束放入到新的list<Integer>中，然后添加到results里面。这种方法特别的地方在于我们不知道什么是开始的点，但是随着我们遍历的深入，我们都从刚刚放入的点开始计算容易往前进行查找，因为前面的点都已经放到了list里面。
+
+16.binary tree longest consecutive sequence（再做一遍）
+我的做法是沿用了上一题的想法，从后往前找，只要前面的数比后面的数小一就把后面的数放进去，便利完再加上第一个数就可以。然后在arraylist中找出长度最长的子list，返回其长度，但是TEL错误。
+
+
+bfs:
+1.topological sorting
+
+ 
