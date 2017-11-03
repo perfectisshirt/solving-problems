@@ -161,6 +161,20 @@ left.val<root.val<=right.val.层级遍历是一个不下降的数组，但是一
 
 
 bfs:
-1.topological sorting
+1.topological sorting（再做一遍）
+定义一个array list来存放graph的结点，定义一个hash map来存放结点以及每个节点的入度。每次都选择入度为0的点作为起始点放进results,然后遍历他的邻居结点。在queue的操作中出现了问题，只要找到了一个neighbor就应该将这个点的入度减去一，然后判断入度为0的点放到results中去。
 
- 
+2.course schedule（再做一遍）
+这一题第一个难点就是构造一个图，从一个二维数组构造一个图。List[]edges = new ArrayList[numCourses];其实这就是存储每个点的邻居节点。
+for(int i=0;i<numCourse;i++){
+  degrees[pre[i][0]]++;
+  edges[pre[i][1]].add(pre[i][0]);
+}就是将有前置结点的入度加一，将新出现的结点加到前置结点的邻居节点。
+
+3.number of islands（再做一遍）
+在矩阵中的点可以转换成坐标对象，生成做标准换数组。另外在bfs的过程中需要进行边界判断，传递的参数要是对象，因为对象的属性是两边改变的。
+
+4.binary tree level order traversal
+这是一道标准的bfs的题目。
+
+5.
