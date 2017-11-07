@@ -177,4 +177,46 @@ for(int i=0;i<numCourse;i++){
 4.binary tree level order traversal
 这是一道标准的bfs的题目。
 
-5.
+5.search graph nodes
+这也是一道标准的bfs的题目，为了避免已经判断过的点再次进行判断我们使用hashset来存储数据。
+
+6.knight shortest path（再做一遍）
+这道题遇到了一个问题就是不知道在什么地方程序跳出来，以及在满足什么条件后steps+1.这里不仅仅需要判断是不是点的坐标越界了而且还需要判断点是不是false.因为是只能往8个方向走，也就是说这8个满足条件的方向就可以认为是走了一步。
+
+7.zombie in matrix（再做一遍）
+这道题不能用和上一题完全相同的方法去解答。首先题目的意思是找到多久人类全部变成僵尸，所以我们需要设置一个变量来统计天数，同时还需要一个变量来统计人数，因为当人数为0的时候就结束判断了。我们使用queue来存放僵尸的位置。所以在使用bfs的时候需要明白我们在queue中到底存放的是什么数据。因为存放的是僵尸，所以判断是不是在边界里面的条件就应该是当前的点是不是人类。
+
+8.graph valid tree（再做一遍）
+一个valid的tree首先不能有环，也就是说edges.length!=n-1;因为是无序的，所以我们使用hashset来存储邻居节点。满足的条件就是放在hash表中的点的个数等于所有点的个数。
+
+9.clone graph
+我们使用一个hashmap来存储以前的点和现在的点，为的是让这两个点能够对应。因为graph包含点和边，所以我们除了要复制点还要复制边。
+
+10.binary tree serialization
+
+11.number of islands ii（再做一遍）
+union-find方法。因为这道题考察的是动态的联通图。建立一个hash map,建立两个id之间的联系，初始化的时候hm.put(id,id).id = x*m+y.hashmap中第二个参数是第一个的parent，也就是第一个点的root,判断两个点是不是建立了连接就是判断这两个点的root是不是相同，如果不相同也就是说明两者不是联通的，就union，也就是father(id,id);同时islands—-。如果两者相同就是表示这两者联通。
+while(fa!=father.get(fa)) {
+                temp = father.get(fa);
+                father.put(fa, parent) ;
+                fa = temp;
+            }这一步的操作的意思是因为每一步都往上递增了，所以就不再是balanced tree，所以我们需要优化他们的时间复杂度。amortized constant time complexity.
+
+data structure:
+1. hash function
+2.high five
+3.k closet points
+4. kth largest element
+5. kth largest element ii
+6. top k largest numbers
+7 rehashing
+8.merge k sorted lists
+9. ugly number
+10. ugly number ii
+11. strStr ii
+12.flatten 2D vector
+13. top k largest numbers ii
+14. merge k sorted arrays
+15. top k frequent words
+16. heapify
+17. longest consecutive sequence
