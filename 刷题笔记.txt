@@ -220,3 +220,9 @@ data structure:
 15. top k frequent words
 16. heapify
 17. longest consecutive sequence
+
+设计类题目：
+1.LRU（再做一遍）
+首先我们要明白我们放进数据结构的不是一个简单的数，而是一个对象，也就是说我们需要进行数据抽象化，假设每次放到数据结构的是一个node,这个node 包含key,value没问题，但是我们也设计了pre和next指针，方便查找调用具体的结点。最新插入的点都是插到尾结点的，所以我们每插入一个结点都不仅仅是将结点方到hashmap中还要判断是否超出了cache的capacity，超过了就要把头结点后的第一个结点删除。get结点的函数是要判断是不是有该结点，如果有就将该结点删除，然后将这个结点移到最后一个结点，因为该节点是最近才使用的结点。之所以使用双链表是因为我们需要对链表进行移除和插入操作，双链表比单链表操作要简单。为了避免查找特定的值的结点的时候我们都要进行链表遍历，我们设置了hashmap。在set函数中判断了有要插入的结点就应该return.判断需要插入的结点在不在链表中是get(key)!=-1,而不能用hs.containsKey(key)。这个还是要从题目的定义出发，题目给了get(key)的定义，if the key exists in the cache.
+
+2.
