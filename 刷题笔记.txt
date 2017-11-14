@@ -65,6 +65,7 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 
 1.paint fence (再做一遍)
 0个fence为0，1个是k，2个fence，如果颜色一样是K,如果颜色不一样是k*(k-1),所以是k*k, 3个fence，如果前两个颜色一样，是k*(k-1),如果第三个和前面两个任意一种颜色相同且前面两个不一样颜色，则回到了第一种情况，如果三个颜色都不一样，则k*(k-1)*(k-2),最后结果是k*k*(k-1),总结来说就是新加入的这个栅栏是要比较和前面的相同还是不同，(k-1)*(same+diff).same的初始值是当只有一个fence的时候，和前一个颜色相同，但是前一个为0，所以初始值为0，diff的初始值就应该是k。
+
 2.longest common subsequence（再做一遍）
 要和substring区分开来，substring要求是要consecutive的。考虑最长公共子序列问题如何分解成子问题，设A=“a0，a1，…，am-1”，B=“b0，b1，…，bm-1”，并Z=“z0，z1，…，zk-1”为它们的最长公共子序列。不难证明有以下性质：
 
@@ -86,13 +87,59 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 
 6. 0,1背包问题 coin change
 
+7. maximum subarray
+有一种数学的解法，这一题刚开始做的时候出现了一个误区，发现的值如果是负数就不加，这样找到的数并不能保证是连续的。这里应该舍弃的值应该是前面的数的和为负数将其舍弃也就是赋值为0，然后从后一个数开始计算。
+public int maxSubArray(int[] nums) {
+        int max = Integer.MIN_VALUE;
+        int sum = 0;
+        for(int i=0;i<nums.length;i++){
+            sum += nums[i];
+            max = Math.max(sum,max);
+            sum = Math.max(0,sum);
+        }
+        return max;
+    }
 
-
+8.climbStairs
+这道题算是比较基本的动态规划的题目,但是有一个问题就是results[0]=1这个初始条件的判断，所以在进行边界条件的判断的时候我个人觉得可以将循环开始时的条件带入看初始值是否正确。
+public int climbStairs(int n) {
+        if(n<=1){
+          return 1;  
+        } 
+        int [] results = new int[n+1];
+        results[0] = 1;
+        results[1] = 1;
+        for(int i=2;i<=n;i++){
+            results[i] = results[i-1] + results[i-2];    
+        }
+        return results[n];
+    }
+我发现这道题特别像斐波那契额数列，就是比斐波那契额数列少了一个第一个1.
 
 深度搜索(DFS):
 dfs的记忆存储方法一般都可以使用动态规划来解决。
 1.subsets
-这道题有几点要注意：首先是要判断其是不要求排好序的数组，如果需要排好序的在开始的时候就要Arrays.sort(nums).在dfs的过程中if(startindex==nums.length)因为题目中确定了[]也是其中的一个子集，所以不用加这一条判断。recursion的过程中i+1的选择，是因为不能出现重复的元素，所以要从下一个元素开始遍历。
+这道题有几点要注意：首先是要判断其是不要求排好序的数组，如果需要排好序的在开始的时候就要Arrays.sort(nums).在dfs的过程中if(startindex==nums.length)因为题目中确定了[]也是其中的一个子集，所以不用加这一条判断。recursion的过程中i+1的选择，是因为不能出现重复的元素，所以要从下一个元素开始遍历。因为空集是自己的子集，所以在判断异常的时候要new 一个对象，也就是产生空集。
+public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> results = new ArrayList<>();
+        if(nums.length==0 || nums==null){
+            return new ArrayList<>();
+        }
+        
+        dfs(nums,0,results,new ArrayList<Integer>());
+        return results;
+    }
+    
+    private void dfs(int[] nums, int startindex, List<List<Integer>> results, List<Integer> sub){
+        results.add(new ArrayList<Integer>(sub));
+        
+        for(int i = startindex;i<nums.length;i++){
+            sub.add(nums[i]);
+            dfs(nums,i+1,results,sub);
+            sub.remove(sub.size()-1);
+        }
+    }
+
 2.subsets ii
 这道题和之前的题目比就是要排除重复元素，所以在dos的过程中if(startindex!=i&&nums[i]==nums[i-1]),continue.如果没有i!=startindex就会出现越界的错误。
 3.split string
@@ -101,12 +148,6 @@ dfs的记忆存储方法一般都可以使用动态规划来解决。
 这里的就不需要startindex这个循环的标志了，因为输出的长度必须是字符串的长度，所以只需要从头到尾遍历一遍就行了。在循环的时候判断语句应该是list.contains(nums[i]),这是在回溯的时候确定判断当前的数字有没有被添加过。
 5.permutations ii
 
-
-
-
-array数组:
-1.maximum subarray（再做一遍）
-这一题刚开始做的时候出现了一个误区，发现的值如果是负数就不加，这样找到的数并不能保证是连续的。这里应该舍弃的值应该是前面的数的和为负数将其舍弃也就是赋值为0，然后从后一个数开始计算。
 
 
 tree:
@@ -227,8 +268,43 @@ data structure:
 16. heapify
 17. longest consecutive sequence
 
-设计类题目：
+数据结构题目：
 1.LRU（再做一遍）
 首先我们要明白我们放进数据结构的不是一个简单的数，而是一个对象，也就是说我们需要进行数据抽象化，假设每次放到数据结构的是一个node,这个node 包含key,value没问题，但是我们也设计了pre和next指针，方便查找调用具体的结点。最新插入的点都是插到尾结点的，所以我们每插入一个结点都不仅仅是将结点方到hashmap中还要判断是否超出了cache的capacity，超过了就要把头结点后的第一个结点删除。get结点的函数是要判断是不是有该结点，如果有就将该结点删除，然后将这个结点移到最后一个结点，因为该节点是最近才使用的结点。之所以使用双链表是因为我们需要对链表进行移除和插入操作，双链表比单链表操作要简单。为了避免查找特定的值的结点的时候我们都要进行链表遍历，我们设置了hashmap。在set函数中判断了有要插入的结点就应该return.判断需要插入的结点在不在链表中是get(key)!=-1,而不能用hs.containsKey(key)。这个还是要从题目的定义出发，题目给了get(key)的定义，if the key exists in the cache.
 
-2.
+2.two sum(hash map)
+因为这道题涉及到数和这个数所在的位置的对应关系，所以我们想到使用hashmap来做，但是在做的过程中我犯了一个错误，就是先往hashmap里面放数字，然后再逐个判断，这样就会存在一个问题，就是相同的数字的话位置就会被覆盖。应该将问题转换成减数和被减数两个数各自有对应的关系。因为题目中说了肯定有解，所以不需要进行数组是否有效的判断。
+public int[] twoSum(int[] nums, int target) {
+        HashMap<Integer,Integer> hm = new HashMap<>();
+        int[] results = new int[2];
+        for(int i=0;i<nums.length;i++){
+            int diff = target-nums[i];
+            if(hm.containsKey(diff)){
+                results[0] = i;
+                results[1] = hm.get(diff);
+            }else{
+                hm.put(nums[i],i);
+            }
+        }
+        return results;
+    }
+
+3.move zeroes(array)
+这道题是让我们把所有的0都放到数组的最后并且不能改变其他数字的相对位置，我首先想到的方法就是对数组进行遍历，使用双指针的办法，如果我们第一个指针的值是0，第二个不是，那么就把两个数交换，如果第一个数不是0那么就把指向第一个数的指针往后移，如果第一个数是0，第二个数也是0就把第二个指针往后移。这个思想其实就是第一个指针指向非零的数，第二个指针指向零，这样遍历完就可以保证所有的零都在后面，而且因为遇到零就换了位置，所以相对的位置也不会改变。
+public void moveZeroes(int[] nums) {
+        for(int i=0;i<nums.length;i++){
+            for(int j=i+1;j<nums.length;j++){
+                if(nums[i]==0&&nums[j]!=0){
+                    int temp = nums[j];
+                    nums[j] = nums[i];
+                    nums[i] = temp;
+                }else if(nums[j] == 0){
+                    continue;
+                }else{
+                    break;
+                }
+            }
+        }
+    }
+
+4
