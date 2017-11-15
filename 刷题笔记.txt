@@ -81,6 +81,22 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 
 4.house robber（再做一遍）
 最重要的就是判断Math.max(res[i-1], res[i-2] + A[i-1])。我们在做这道题的时候我们从递归入手慢慢的变到动态规划问题。首先我们需要知道问题是问最大值的问题，我们就会想到dp，然后我们假设是从最后一个房子开始抢，如果抢的话那么就是这间房子的价值加上index-2，或者说这间房子不抢，那么就是要抢index-1，依次递归。最后我们发现时间超过了。所以我们想到用数组来存放不断重复的数据，int []results.在我们将递推公式带入的时候发现开始值在2，那么我们就需要定义为0和1的初始值。最后我们只需要返回定义数组的最后一个值就完成了。
+public int rob(int[] nums) {
+        if(nums.length==0 || nums == null){
+            return 0;
+        }
+        if(nums.length==1){
+            return nums[0];
+        }
+        int []results = new int[nums.length];
+        
+        results[0] = nums[0];
+        results[1] = Math.max(nums[0],nums[1]);
+        for(int i=2;i<nums.length;i++){
+           results[i] = Math.max(results[i-2]+nums[i],results[i-1]);
+        }
+        return results[nums.length-1];
+    }
 
 5.house robber ii
 这题和第一题不一样的地方在这是一个圈，也就是首节点和末节点是相邻结点，这两个节点要么多不选，要么选一个。可以先按照第一个题目的方法解出来，然后分别给这几种情况比较去最大值就可以了。
@@ -307,4 +323,290 @@ public void moveZeroes(int[] nums) {
         }
     }
 
-4
+4.add binary(string)
+我想到的办法是首先判断两个字符串的长度，长度小的那个字符串在末尾补齐长度加0。然后将两个字符串从末尾开始加，最后将字符串reverse过来就可以了。
+还有一种方法是直接对两个字符串从末尾向前遍历，每一位的值其实就是两个字符串在相应位置的值的和加上carry位的值，因为每一位的值就只有0或者1，所以只需要将和对2取余。carry位则是sum/2，因为在二进制中是满2加一。
+public String addBinary(String a, String b) {
+        if(a == null || a.length()==0){
+            return b;
+        }
+        if(b==null || b.length()==0){
+            return a;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        int indexa = a.length()-1;
+        int indexb = b.length()-1;
+        int carry = 0;
+        while(indexa>=0 || indexb>=0){
+            int sum = carry;
+            if(indexa>=0) sum += a.charAt(indexa--) -'0';
+            if(indexb>=0) sum += b.charAt(indexb--) - '0';
+            
+            carry = sum/2;
+            sb.append(sum % 2);
+        }
+        if(carry!=0) sb.append(carry);
+        return sb.reverse().toString();
+        
+    }
+两个char类型的数字相减其实是他们对应的aspic码相减，string builder类型中有一个reverse的方法将字符串反过来。
+
+5. First bad version (binary tree)
+找第一个是坏的东西，从中间开始找，如果中间的是坏的，说明前面有第一个坏的，反之，就向后找。
+public int firstBadVersion(int n) {
+        if(n <= 0) return 0;
+        
+        int start = 1;
+        int end = n;
+        while(start+1<end){
+            int mid = start+(end-start)/2;
+            if(isBadVersion(mid)){
+                end = mid;
+            }else{
+                start = mid;
+            }
+        }
+        if(isBadVersion(start)) return start;
+        if(isBadVersion(end)) return end;
+        
+        return 0;
+    }
+
+6.binary tree paths(tree)
+divide and conquer:
+ public List<String> binaryTreePaths(TreeNode root) {
+        if(root == null){
+            return new ArrayList<String>();
+        }
+        
+        List<String> left = binaryTreePaths(root.left);
+        List<String> right = binaryTreePaths(root.right);
+        
+        
+        List<String> results = new ArrayList<String>();
+        
+            for(String s:left){
+                results.add(root.val+"->"+s);
+            }
+        
+         
+            for(String s:right){
+                results.add(root.val+"->"+s);
+            }
+        
+        
+        if (results.size() == 0) {
+            results.add("" + root.val);
+        }
+        return results;
+    }
+
+dfs:
+这道题最直观的做法应该是深搜，因为题目的意思就满足深搜的条件。但是这道题我们要注意的一点就是在iteration的过程中每次都是new StringBuilder(sb),因为如果不是这样，每一次都会将之前的结果重复计算一遍。
+public List<String> binaryTreePaths(TreeNode root) {
+        List<String> results = new ArrayList<String>();
+        if(root == null){
+            return results;
+        }
+        
+        helper(root,results,new StringBuilder());
+        return results;
+    }
+    
+    private void helper(TreeNode root, List<String> results, StringBuilder sb){
+        if(root.left==null && root.right==null){
+            sb.append(root.val);
+            results.add(sb.toString());
+            return;
+        }
+        sb.append(root.val);
+        sb.append("->");
+       if(root.left!=null){
+           helper(root.left,results,new StringBuilder(sb));
+       }
+        if(root.right!=null){
+           helper(root.right,results,new StringBuilder(sb));
+       }
+    }
+
+7.read N characters given read4(string) 再做一遍
+刚开始题目没有读懂。后来明白，我们需要设置一个临时数组，这个数组的大小为4，每次从这个数组中读数read4(tmp)，读出来的数存到count中，意思就是说这个数组中有多少数，如果count==0就说明数读完了，如果不是就进行判断，如果读出来的数的大小比n-res小，也就是说需要读出的数的多少减去已有的数就是需要的数，那就把count存储给一个变量，然后从res开始将数字放到目标数组中。
+public int read(char[] buf, int n) {
+       char[] tmp = new char[4];
+       int res = 0, count = -1;
+       while (res < n) {
+            count = read4(tmp);
+            if (count == 0)
+                   break;
+            int r = n - res < count ? n - res : count;
+            for (int i = 0; i < r; i++) {
+                buf[res++] = tmp[i];
+            }
+        }
+           return res;
+    }
+
+8.diameter of binary tree(binary tree, divide and conquer)
+求任意两个点的距离最长，那就是左子树的最长的高加上右子树最长的高。只是这道题比maximum depth of binary tree多了一个判断，就是我们要取left+right的最大值，所以加上Math.max(max,left+right).
+private int max = 0;
+    
+    public int diameterOfBinaryTree(TreeNode root) {
+        maxDepth(root);
+        return max;
+    }
+    
+    private int maxDepth(TreeNode root) {
+        if (root == null) return 0;
+        
+        int left = maxDepth(root.left);
+        int right = maxDepth(root.right);
+        
+        max = Math.max(max, left + right);
+        
+        return Math.max(left, right) + 1;
+    }
+
+9.maximum depth of binary tree(binary tree, divide and conquer)
+ public int maxDepth(TreeNode root) {
+        if(root == null) return 0;
+        
+        int left = maxDepth(root.left);
+        int right = maxDepth(root.right);
+        
+        return Math.max(left,right)+1;
+    }
+
+10.reverse linked list(linked list)
+public ListNode reverseList(ListNode head) {
+        if(head == null) return null;
+        
+        ListNode pre = null;
+        while(head!=null){
+            ListNode temp = head.next;
+            head.next = pre;
+            pre = head;
+            head = temp;
+        }
+        return pre;
+    }
+
+11.merge sorted array(array)
+因为说明了要把2放到1中，所以这是in-place的操作。一个tricky 的方法就是把2先放进去，然后进行排序就可以了。
+public void merge(int[] nums1, int m, int[] nums2, int n) {
+        int count = 0;
+        for(int i=m;i<m+n;i++){
+            nums1[i] = nums2[count];
+            count++;
+        }
+        Arrays.sort(nums1);
+    }
+当然，在面试的时候要想其他的办法。我想到了双指针，也就是一个指针指向数组1的最后一个元素，另一个指针指向数组2的最后一个元素，然后进行比较，大的入选到数组1的最后，数组1的最终有效大小是m+n.
+ public void merge(int[] nums1, int m, int[] nums2, int n) {
+        
+        int index = m+n-1;
+        int index1 = m-1;
+        int index2 = n-1;
+        while(index1>=0 && index2>=0){
+            if(nums1[index1]>nums2[index2]){
+                nums1[index--] = nums1[index1--];
+            }else{
+                nums1[index--] = nums2[index2--];
+            }
+        }
+        while(index1>=0){
+            nums1[index--] = nums1[index1--];
+        }
+        while(index2>=0){
+            nums1[index--] = nums2[index2--];
+        }
+    }
+
+12.roman to integer(math , string)
+这道题最重要的是要知道罗马数的表示方式和规则，I=1,V=5,X=10,L=50,C=100,D=500,M=1000。然后要知道罗马数转换成整数的公式，如果前一个数比后一个数大，加上这个数，反之，就减去前一个数的两倍再加上当前的数。
+public static int charToInt(char c) {  
+        int data = 0;  
+  
+        switch (c) {  
+            case 'I':  
+                data = 1;  
+                break;  
+            case 'V':  
+                data = 5;  
+                break;  
+            case 'X':  
+                data = 10;  
+                break;  
+            case 'L':  
+                data = 50;  
+                break;  
+            case 'C':  
+                data = 100;  
+                break;  
+            case 'D':  
+                data = 500;  
+                break;  
+            case 'M':  
+                data = 1000;  
+                break;  
+        }  
+  
+        return data;  
+    }  
+  
+    public static int romanToInt(String s) {  
+        int i, total, pre, cur;  
+  
+        total = charToInt(s.charAt(0));  
+  
+        for (i = 1; i < s.length(); i++) {  
+            pre = charToInt(s.charAt(i - 1));  
+            cur = charToInt(s.charAt(i));  
+  
+            if (cur <= pre) {  
+                total += cur;  
+            } else {  
+                total = total - pre * 2 + cur;  
+            }  
+        }  
+  
+        return total;  
+    }  
+
+13.regular expression matching
+
+14.evaluate reverse polish notation(stack)
+这是一道标准的使用stack来存储计算的题目，这应该是中序的表达，要练习前序和后续的题目，以及他们之间的转换。这道题有一个边界case的考虑，就是如果只有一个值的情况。我们应该在default的情况里直接将当前的值赋给results.
+public int evalRPN(String[] tokens) {
+        Stack<String> stack = new Stack<String>();
+        int results = 0;
+        for(int i=0;i<tokens.length;i++){
+            switch(tokens[i]){
+                case "*":
+                    results = Integer.parseInt(stack.pop()) * Integer.parseInt(stack.pop());
+                    stack.push(String.valueOf(results));
+                    break;
+                case "/":
+                    int divide = Integer.parseInt(stack.pop());
+                    int temp = Integer.parseInt(stack.pop());
+                    results = temp / divide;
+                    stack.push(String.valueOf(results));
+                    break;
+                case "+":
+                    results = Integer.parseInt(stack.pop()) + Integer.parseInt(stack.pop());
+                    stack.push(String.valueOf(results));
+                    break;
+                case "-":
+                    int second = Integer.parseInt(stack.pop());
+                    int first = Integer.parseInt(stack.pop());
+                    results = first - second;
+                    stack.push(String.valueOf(results));
+                    break;
+                default:
+                   stack.push(tokens[i]);
+                    results = Integer.parseInt(tokens[i]);
+                    break;
+            }
+        }
+        return results;
+    }
