@@ -288,6 +288,65 @@ data structure:
 1.LRU（再做一遍）
 首先我们要明白我们放进数据结构的不是一个简单的数，而是一个对象，也就是说我们需要进行数据抽象化，假设每次放到数据结构的是一个node,这个node 包含key,value没问题，但是我们也设计了pre和next指针，方便查找调用具体的结点。最新插入的点都是插到尾结点的，所以我们每插入一个结点都不仅仅是将结点方到hashmap中还要判断是否超出了cache的capacity，超过了就要把头结点后的第一个结点删除。get结点的函数是要判断是不是有该结点，如果有就将该结点删除，然后将这个结点移到最后一个结点，因为该节点是最近才使用的结点。之所以使用双链表是因为我们需要对链表进行移除和插入操作，双链表比单链表操作要简单。为了避免查找特定的值的结点的时候我们都要进行链表遍历，我们设置了hashmap。在set函数中判断了有要插入的结点就应该return.判断需要插入的结点在不在链表中是get(key)!=-1,而不能用hs.containsKey(key)。这个还是要从题目的定义出发，题目给了get(key)的定义，if the key exists in the cache.
 
+private class node{
+        int val;
+        int key;
+        node pre = null;
+        node next = null;
+        node(int key,int val){
+            this.val = val;
+            this.key = key;
+        }
+    }
+    int capacity;
+    node head = new node(-1,-1);
+    node tail = new node(-1,-1);
+    HashMap<Integer,node> hm = new HashMap<Integer,node>();
+    
+    public LRUCache(int capacity) {
+        this.capacity = capacity;
+        head.next = tail;
+        tail.pre = head;
+    }
+    
+    public int get(int key) {
+        if(!hm.containsKey(key)){
+            return -1;
+        }
+        node cur = hm.get(key);
+        cur.pre.next = cur.next;
+        cur.next.pre = cur.pre;
+        toTail(cur);
+        return hm.get(key).val;
+    }
+    
+    public void put(int key, int value) {
+        //如果原来里面就有这个结点，就只需要更新点的值就行了
+        if(get(key)!=-1){
+            hm.get(key).val = value;
+            return;
+        }
+        if(hm.size()==capacity){
+            hm.remove(head.next.key);
+            head.next = head.next.next;
+            head.next.pre = head;
+        }
+        
+        
+        node cur = new node(key,value);
+        hm.put(key,cur);
+        toTail(cur);
+    }
+    
+    //其实就是尾插
+    private void toTail(node current){
+       current.pre = tail.pre;
+        tail.pre = current;
+        current.pre.next = current;
+        current.next = tail;
+    }
+}
+
 2.two sum(hash map)
 因为这道题涉及到数和这个数所在的位置的对应关系，所以我们想到使用hashmap来做，但是在做的过程中我犯了一个错误，就是先往hashmap里面放数字，然后再逐个判断，这样就会存在一个问题，就是相同的数字的话位置就会被覆盖。应该将问题转换成减数和被减数两个数各自有对应的关系。因为题目中说了肯定有解，所以不需要进行数组是否有效的判断。
 public int[] twoSum(int[] nums, int target) {
@@ -609,4 +668,101 @@ public int evalRPN(String[] tokens) {
             }
         }
         return results;
+    }
+
+15.valid palindrome(string )
+这道题一开始有一个单词没懂，ignoring cases就是说如果是字母就忽视大小写。只需要在判断到是大写的时候将大写的字母变成小写的就行了。但是我还是犯了一个错误，就是’a’+(c-‘A’)这个的返回值是一个整数，要进行类型转换成char.
+public boolean isPalindrome(String s) {
+        if(s==null || s.length()==0){
+            return true;
+        }
+        
+        char[] array = new char[s.length()];
+        int index = 0;
+        for(int i=0;i<s.length();i++){
+            if((s.charAt(i)>='0'&&s.charAt(i)<='9')||(s.charAt(i)>='a'&&s.charAt(i)<='z')){
+                array[index++] = s.charAt(i);
+            }
+            if(s.charAt(i)>='A'&&s.charAt(i)<='Z'){
+                array[index++] = changeToSmall(s.charAt(i));
+            }
+        }
+        for(int i=0;i<index;i++){
+            if(array[i]!=array[index-i-1]){
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    private char changeToSmall(char c){
+        return (char)('a'+ (c-'A'));
+    }
+
+16.meeting rooms(sort)再做一遍
+这道题如果用暴力方法解答的话，需要考虑太多的情况，比如pre.start and after.end的关系还有pre.end和after.start的关系。如果我们将所有的数据的起始时间进行比较，我们就只需要考虑一种情况了。但是我们还需要考虑几种边界情况，如果排序的时候两个点的start相等（不存在，肯定会返回false），pre.end和后一个start相等的关系（可以）。Arrays.sort的排序不仅仅可以使用在数字数组上，字符数组上，还可以对对象数组进行排序。有一点要注意的就是每次比较完要将最晚时间更新为当前的最晚时间。
+public boolean canAttendMeetings(Interval[] intervals) {
+        if(intervals == null || intervals.length==0) return true;
+        
+        Arrays.sort(intervals,new Comparator<Interval>(){
+            public int compare(Interval i1, Interval i2){
+                return i1.start - i2.start;
+            }
+        });
+        
+        for(int i=1;i<intervals.length;i++){
+            int tail = intervals[i-1].end;
+            if(tail > intervals[i].start){
+                return false;
+            }else{
+                tail = intervals[i].end; 
+            }
+        }
+        
+        return true;
+    }
+
+17.valid palindrome ii(string)
+这道题在考虑的时候因为涉及到了palindrome我就想到了首尾指针，因为题目中提到了说最多只能删除一个字母，也就是说在只有可能在第一次遇到不同字母的时候开始考虑要不要删除这个字母，但是双指针就会遇到到底是将左边的指针往右还是右边的指针往左。所以我们使用substring的方法将剪切出两个子字符串，这两个子字符串只要有一个是true就是true.还有这个结果的boolean类型初始化为true,为的是防止出现这样一个问题,aba.
+public boolean validPalindrome(String s) {
+        boolean results = true;
+        int start = 0;
+        int end = s.length()-1;
+        while(start<end){
+             if(s.charAt(start)==s.charAt(end)){
+                 start++;
+                 end--;
+             }else{
+                 results = palindrome(s.substring(start+1,end+1))||palindrome(s.substring(start,end));
+                 break;
+             }
+        }
+         return results;
+    }
+    
+    private boolean palindrome(String s){
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)!=s.charAt(s.length()-i-1)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+18.first unique character in a string
+这道题一开始的想法是使用hashmap来解决，就是将s进行遍历，然后将每一个字符出现的次数放进去，但是有一个问题，就是要判断哪个是第一不重复的数。然后我想到了放数组里，这个数组就是26字符的数组，因为字符有顺序并且一个萝卜一个坑。我们只需要用当前的字符减去a就可以得到这个字符的位置了，所以最后我们从前往后遍历的时候出现的字符出现的次数显示也是按照出现顺序来定的。
+public int firstUniqChar(String s) {
+        int index = -1;
+        int[] results = new int[26];
+        for(int i=0;i<s.length();i++){
+            results[s.charAt(i)-'a']++;
+        }
+        
+        for(int i=0;i<s.length();i++){
+            if(results[s.charAt(i)-'a']==1){
+                index = i;
+                break;
+            }
+        }
+        return index;
     }
