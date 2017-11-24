@@ -798,5 +798,21 @@ public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
         return results.next;
     }
 
-21.longest substring without repeating characters
-我已开始想到的做法是用一个hashset来存放不一样的值，但是发现最后取得最大值是subsequence，并不是substring.
+21.longest substring without repeating characters(array or hashmap)
+我已开始想到的做法是用一个hashset来存放不一样的值，但是发现最后取得最大值是subsequence，并不是substring.其实我们可以使用暴力一点的做法，建立一个ascii数组来存放每一个字符的出现次数，只有1和0，从第一个字符开始遍历，如果不存在就将字符所在的位置设置为true,如果有重复就将旧的字符位设置为false,然后向后走。每一次都将字符串的长度和ans进行比较，将最长的值赋值给ans，最后返回ans.
+ public int lengthOfLongestSubstring(String s) {
+        boolean[] array = new boolean[256];
+        int j = 0;
+        int ans = 0;
+        for(int i=0;i<s.length();i++){
+            while(j<s.length()&&array[s.charAt(j)]==false){
+                array[s.charAt(j)]=true;
+                ans = Math.max(ans,j-i+1);
+                j++;
+            }
+            array[s.charAt(i)]=false;
+        }
+        return ans;
+    }
+
+22.longest palindrome substring
