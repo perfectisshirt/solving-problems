@@ -766,3 +766,37 @@ public int firstUniqChar(String s) {
         }
         return index;
     }
+
+19.permutation(dfs)再做一遍
+
+20.add two numbers(linkedlist)
+这道题最重要的一点就是数字相加的进位处理问题。这样的处理也可以处理二进制的数字问题，carry = temp/10,二进制就是temp/2;temp%=10,二进制就是temp%2.
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        ListNode results = new ListNode(0);
+        ListNode point = results;
+        int carry = 0;
+        while(l1!=null || l2!=null){
+            int n1 = 0;
+            int n2 = 0;
+            if(l1!=null){
+                n1 = l1.val;
+                l1 = l1.next;
+            }
+            if(l2!=null){
+                n2 = l2.val;
+                l2 = l2.next;
+            }
+            int temp = n1 + n2 + carry;
+            carry = temp/10;
+            temp %= 10;
+            point.next = new ListNode(temp);
+            point = point.next;
+        }
+        if(carry>0){
+            point.next = new ListNode(carry);
+        }
+        return results.next;
+    }
+
+21.longest substring without repeating characters
+我已开始想到的做法是用一个hashset来存放不一样的值，但是发现最后取得最大值是subsequence，并不是substring.
