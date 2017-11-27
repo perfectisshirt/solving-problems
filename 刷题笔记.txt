@@ -1028,4 +1028,30 @@ public void rotate(int[] nums, int k) {
        }
     }
 
-32.
+32.remove invalid parentheses
+
+33.swap nodes in pairs(linkedlist)
+这道题也是linkedlist的经典题目，关于节点交换的题目都需要知道要交换的点的前一个节点，有些需要知道交换节点的后一个节点。这道题的难点在于要想到每两个交换的节点都是在变化的，所以我们申明指针指向这两个节点和他们的前节点的时候需要在循环中。
+public ListNode swapPairs(ListNode head) {
+        if(head==null || head.next==null){
+            return head;
+        }
+        ListNode dummy = new ListNode(0);
+        ListNode point = dummy;
+        dummy.next = head;
+       
+        while(head!=null && head.next!=null){
+            ListNode p1 = head;
+            ListNode p2 = head.next;
+            point.next = p2;
+            p1.next = p2.next;
+            p2.next = p1;
+            
+            point = head;
+            head = head.next;
+        }
+        
+        return dummy.next;
+    }
+
+34.search in rotated sorted array(binary tree)
