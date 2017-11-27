@@ -798,9 +798,9 @@ public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
         return results.next;
     }
 
-21.longest substring without repeating characters(array or hashmap)
-我已开始想到的做法是用一个hashset来存放不一样的值，但是发现最后取得最大值是subsequence，并不是substring.其实我们可以使用暴力一点的做法，建立一个ascii数组来存放每一个字符的出现次数，只有1和0，从第一个字符开始遍历，如果不存在就将字符所在的位置设置为true,如果有重复就将旧的字符位设置为false,然后向后走。每一次都将字符串的长度和ans进行比较，将最长的值赋值给ans，最后返回ans.
- public int lengthOfLongestSubstring(String s) {
+21.longest substring without repeating characters
+我已开始想到的做法是用一个hashset来存放不一样的值，但是发现最后取得最大值是subsequence，并不是substring.
+public int lengthOfLongestSubstring(String s) {
         boolean[] array = new boolean[256];
         int j = 0;
         int ans = 0;
@@ -816,3 +816,216 @@ public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
     }
 
 22.longest palindrome substring
+
+23.palindrome number
+首先需要知道负数在不在考虑范围内，需要和interviwer沟通，然后就是将数字转换的时候需要防止数字溢出。我第一遍在做的时候将x直接进行运算，这样x的值就被变化了，就不能直接进行比较了。
+if(x<0){
+            return false;
+        }
+        int results = 0;
+        int cur = x;
+        
+        while(x!=0){
+            int temp = results*10 + x%10;
+            if(temp/10 == results){
+                results = temp;
+                x /=10;
+            }else{
+                return false;
+            }
+        }
+        if(cur == results){
+            return true;
+        }else return false;
+
+24.longest  common prefix
+选择整个字符串数组中最长的common prefix，最暴力的想法就是每两个字符串进行比较，取出其中最长的子串，然后第三个字符串和这个最长的子串进行比较，以此类推。
+if(strs.length==0 || strs==null){
+            return new String();
+        }
+        
+        String prefix = strs[0];
+        for(int i=1;i<strs.length;i++){
+            int j = 0;
+            while(j<prefix.length()&&j<strs[i].length()&&strs[i].charAt(j)==prefix.charAt(j)){
+                j++;
+            }
+            if(j==0){
+                return "";
+            }
+            prefix = prefix.substring(0,j);
+        }
+        return prefix;
+
+25.merge two sorted lists
+简单的对linked list的比较，dummy node 的应用。
+public ListNode mergeTwoLists(ListNode l1, ListNode l2) {
+        ListNode dummy = new ListNode(0);
+        ListNode point = dummy;
+        while(l1!=null && l2!=null){
+            if(l1.val>l2.val){
+                point.next = l2;
+                l2 = l2.next;
+                point = point.next;
+            }else{
+                point.next = l1;
+                l1 = l1.next;
+                point = point.next;
+            }
+        }
+        while(l1!=null){
+            point.next = l1;
+            l1 = l1.next;
+            point = point.next;
+        }
+        while(l2!=null){
+            point.next = l2;
+            l2 = l2.next;
+            point = point.next;
+        }
+        return dummy.next;
+    }
+
+26.remove duplicates from sorted array
+因为这道题已经交代了是sorted array，所以不用排序，要不然第一部应该是排序。我们使用一个变量来存储应该插入的不同的元素的位置，另一个变量进行比较。
+public int removeDuplicates(int[] nums) {
+        // Arrays.sort(nums);
+        int j = 0;
+        for(int i=1;i<nums.length;i++){
+            if(nums[i]==nums[j]){
+                continue;
+            }else{
+                nums[++j] = nums[i];
+            }
+        }
+        return j+1;
+    }
+
+27.remove element
+这题和上一题很像，也是需要有一个变量来存储不是target的数的位置，所以只要发现有数不相等就把数组中的位置填满，然后变量往后走。
+public int removeElement(int[] nums, int val) {
+        int j = 0;
+        int cur = 0;
+        for(int i=0;i<nums.length;i++){
+            cur = nums[i];
+            if(cur!=val){
+                nums[j++]=cur;
+            }
+        }
+        return j;
+    }
+
+28.divide two integers（重看一遍）
+这道题用到了位运算。
+
+29.valid parentheses(stack)
+这是一道简单的栈的问题，但是在做的过程中出现了几个问题。第一是stack是否为空，我在判断的时候是如果发现了右边比配的字符就取出栈中最上面的，但是我忘了判断此时栈是否为空，isEmpty()。第二个问题是最后return的值，我应该考虑到只有当其中的值全部被取出去了才是true,因为如果原来string只有一个{,那么只存进去就不为空。
+public boolean isValid(String s) {
+        Stack<Character> stack = new Stack<Character>();
+        for(char c:s.toCharArray()){
+            if(c=='{'||c=='['||c=='('){
+                stack.push(c);
+            }
+            if(c=='}'){
+                if(stack.isEmpty()||stack.pop()!='{')
+                    return false;
+            }
+            if(c==']'){
+                if(stack.isEmpty()||stack.pop()!='[')
+                    return false;
+            }
+            if(c==')'){
+                if(stack.isEmpty()||stack.pop()!='(')
+                    return false;
+            }
+        }
+        return stack.isEmpty();
+    }
+
+30.implement strStr()
+这道题用暴力解法，我第一次写的时候遇到了几个问题，第一个是边界问题，如果两个字符串都是””,则应该返回0.第二个是第一个循环的判断条件是<=haystack.length()-needle.length()。第三个是返回条件是j==needle.length(),也就是说当needle被全部循环了一遍才是结束的条件。
+public int strStr(String haystack, String needle) {
+        if(haystack==null||needle==null){
+            return -1;
+        }
+        if(haystack.length()==0&&needle.length()==0){
+            return 0;
+        }
+        int i=0 ;
+        for(;i<=haystack.length()-needle.length();i++){
+            int j= 0 ;
+            for(;j<needle.length();j++){
+                if(needle.charAt(j)!=haystack.charAt(j+i)){
+                    break;
+                }
+            }
+            if(j==needle.length()){
+                return i;
+            }
+        }
+        return -1;
+    }
+
+除了暴力解法，我们还可以使用hash function，robin-carp方法解决。比如aabb,找ab，我们可以逐个去找其hashcode匹配的字符串。我们在做的时候一定要小心溢出的问题，也就是溢出hashtable的capacity,所以我们在求其阶乘的时候要%BASE.
+    private int BASE = 10000000;
+    public int strStr(String source, String target) { 
+        if(source==null || target==null) return -1;
+        int m  = target.length();
+        if(m==0) return 0;
+        
+        int targetcode = 0;
+        for(int i=0;i<m;i++){
+            targetcode = (targetcode*31 + target.charAt(i))%BASE;
+        }
+        
+        int pow = 1;
+        for(int i=0;i<m;i++){
+            pow = (pow*31)%BASE;
+        }
+        
+        int sourcecode = 0;
+        for(int i=0;i<source.length();i++){
+            sourcecode = (sourcecode*31+source.charAt(i))%BASE;
+            
+            if(i<m-1){
+                continue;
+            }
+            
+            if(i>=m){
+                sourcecode = sourcecode - (source.charAt(i-m)*pow)%BASE;
+                if(sourcecode<0){
+                    sourcecode += BASE;
+                }
+            }
+            
+            if(sourcecode==targetcode){
+                if(source.substring(i-m+1,i+1).equals(target)){
+                    return i-m+1;
+                }
+            }
+        }
+        return -1;
+        
+    }
+
+31.rotate array
+这是一道简单的数组的题目，这道题可以利用公式[A-B-]-,A-代表A的reverse。
+public void rotate(int[] nums, int k) {
+        if(k==0 || nums.length==0 || nums==null) return;
+        k %= nums.length ;
+        reverse(nums, 0, nums.length - 1);
+        reverse(nums, 0, k - 1);
+        reverse(nums, k, nums.length - 1);
+    }
+    
+    public void reverse(int[] array,int start,int end){
+       while(start<=end){
+           int temp = array[end];
+           array[end] = array[start];
+           array[start] = temp;
+           start++;
+           end--;
+       }
+    }
+
+32.
