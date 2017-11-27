@@ -1055,3 +1055,132 @@ public ListNode swapPairs(ListNode head) {
     }
 
 34.search in rotated sorted array(binary tree)
+
+35.zigzag conversion(string)
+按照一定规律排列读取string,就是将规律装换成数学表达式。这道题有几个注意的点，第一个是因为最后字符串的读取是换了一个方式，所以我们需要新建一个stringbuilder，将字符串读取添加。第二个问题就是字符读取过程是一个反复的过程，向下到低端就要反弹回去，所以要使用两个循环，一个是向下循环，一个是向上循环。
+public String convert(String s, int numRows) {
+        char[] array = s.toCharArray();
+        int len = array.length;
+        
+        StringBuilder []sb = new StringBuilder[numRows];
+        for(int i=0;i<numRows;i++){
+            sb[i] = new StringBuilder();
+        }
+        
+        int i = 0;
+        while(i<len){
+            for(int index = 0;index<numRows && i<len;index++){
+                sb[index].append(array[i++]);
+            }
+            for(int index = numRows-2;index>=1 && i<len;index--){
+                sb[index].append(array[i++]);
+            }
+        }
+        for(int index=1;index<numRows;index++){
+            sb[0].append(sb[index]);
+        }
+        
+        return sb[0].toString();
+    }
+
+36.string to integer(atoi)
+这题就是需要考虑全面一点，是否在integer的范围里面，小数怎么办，非法字符怎么办,string是null怎么办,还要考虑这个数字是不是负数，string当中的空格怎么办。
+trim()是把起始和结尾的空格都删除了。首先就应该将前后的空格删除，然后判断当前的第一个字符是什么符号，并做好标记。逐个判断是否为数字，如果是的话就加进去。数字的读取 sum = sum *10+str.charAt(i)-‘0’;因为要判断数字是否超出了整数的表示范围，所以我们需要将和设置为long,再根据符号判断是否超出上界还是下界。要注意的是如果是负数，和是要乘以（-1）的。
+public int myAtoi(String str) {
+        if(str==null || str.length()==0) 
+            return 0;
+        str = str.trim();
+        
+        int signal = 1,len = str.length(),start = 0;
+        long sum = 0;
+        if(str.charAt(0)=='+'){
+            signal = 1;
+            start++;
+        }else if(str.charAt(0)=='-'){
+            signal = -1;
+            start++;
+        }
+        
+        for(int i=start;i<len;i++){
+            if(!Character.isDigit(str.charAt(i))){
+                return (int)sum * signal;
+            }
+            sum = sum*10+str.charAt(i)-'0';
+            if(signal==1 && sum>Integer.MAX_VALUE){
+                return Integer.MAX_VALUE;
+            }
+            if(signal==-1 && (-1) * sum<Integer.MIN_VALUE){
+                return Integer.MIN_VALUE;
+            }
+        }
+        return (int)sum*signal;
+    }
+
+37.container with most water
+这道题一开始我理解错了题意，两条垂直的线分别代表的是两个高度，要盛水的话肯定是按短的算，并不是计算两根线和x轴组成的图形的面积。这道题可以用双指针的思想来解决，分别从头和尾开始向中间进发。因为end-start无论是左边往右走还是右边往左走都是减少的，所以不可以不用考虑。但是高度都是短的提取，所以都是要紧着短的来，目的是为了找到更短的。
+public int maxArea(int[] height) {
+        
+        int max = Integer.MIN_VALUE;
+        int start = 0;
+        int end = height.length-1;
+        
+        while(start<end){
+            max = Math.max(max,Math.min(height[start],height[end])*(end-start));
+            if(height[start]>height[end]){
+                end--;
+            }else start++;
+        }
+        return max;
+    }
+
+38.remove nth node from end of list
+这道题和之前删除结点的题目一样都是需要找到要删除结点的前一个结点。但是这样的题目有一个问题就是考虑的问题比较多，最大的问题就是空指针的问题，也就是寻路指针在遍历的时候他自己和next指针是不是为空都是需要进行判断的，要不然就会出错。
+ public ListNode removeNthFromEnd(ListNode head, int n) {
+        if(head==null || n==0){
+            return head;
+        }
+        
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        head = dummy;
+        ListNode point = dummy;
+        
+        for(int i=0;i<n;i++){
+            head = head.next;
+            if(head==null){
+                return null;
+            }
+        }
+        
+        while(head!=null && head.next!=null){
+            head = head.next;
+            point = point.next;
+        }
+        
+        point.next = point.next.next;
+        return dummy.next;
+    }
+
+39.generate parentheses
+这道题我一开始的想法是，建立一个stack来判断是否所有的括号都是配对的，然后使用dfs的方法来生成最后的答案。但是在操作过程中我发现我把问题复杂了，还有一个问题是我们不好直接构建原始数组使其包含所有的左括号和右括号。
+这道题毫无疑问是使用dfs的方法来解决，但是解决的方法其实就是按照题目的意思来构造list就行了，定义一个左括号的下标，一个右括号的下标，当str的数量满足n*2的时候就放到list中，如果open<n小就应该加上一个左括号，如果close<open就加上一个右括号。
+ public List<String> generateParenthesis(int n) {
+        List<String> results = new ArrayList<String>();
+        helper(results,"",0,0,n);
+        return results;
+    }
+    
+    private void helper(List<String> results, String str, int open, int  close, int max){
+       if(str.length() == max*2){
+           results.add(str);
+           return;
+       }
+       if(open<max){
+           helper(results,str+"(",open+1,close,max);
+       }
+       if(close<open){
+           helper(results,str+")",open,close+1,max);
+       }
+    }
+
+40.combination sum
