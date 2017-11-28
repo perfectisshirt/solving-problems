@@ -76,8 +76,7 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 （3） 如果am-1!=bn-1，则若zk-1!=bn-1，蕴涵“z0，z1，…，zk-1”是“a0，a1，…，am-1”和“b0，b1，…，bn-2”的一个最长公共子序列。
 设dp[i][j]，意思是A[0,i],B[0,j]中的最长相同子序列。
 
-3.decode ways（再做一遍）
-首先构建出dp数组，dp[i]表示字符串0到i-1这段数组中的解码方式数量，最麻烦的是dp[0]=1,这个初始化要注意。然后就是判断字符串i-1到i是不是能用两个字符位表示，能就判断int值是不是在10-26之间，不是的话就dp[i]=dp[i-1];
+
 
 4.house robber（再做一遍）
 最重要的就是判断Math.max(res[i-1], res[i-2] + A[i-1])。我们在做这道题的时候我们从递归入手慢慢的变到动态规划问题。首先我们需要知道问题是问最大值的问题，我们就会想到dp，然后我们假设是从最后一个房子开始抢，如果抢的话那么就是这间房子的价值加上index-2，或者说这间房子不抢，那么就是要抢index-1，依次递归。最后我们发现时间超过了。所以我们想到用数组来存放不断重复的数据，int []results.在我们将递推公式带入的时候发现开始值在2，那么我们就需要定义为0和1的初始值。最后我们只需要返回定义数组的最后一个值就完成了。
@@ -1380,4 +1379,146 @@ public int searchInsert(int[] nums, int target) {
         helper(root.left,results);
         results.add(root.val);
         helper(root.right,results);
+    }
+
+50. valid number
+这道题的描述就十分的抽象，只是判断一个字符串是不是valid number,是哪一类的数，int,float都不知道，是正是负不知道，如果是小数，采取什么样的表示方式也不知道，所以这道题只能列举出所有的可能性再针对每一个可能性进行判断。
+1.空格的问题。可以通过trim来去除开头和结尾的空格，中间的空格则直接判定为无效
+2.小数点。位置随意，但是不同位置的限制条件不同。首先只能出现一次，不能出现在e的后面，出现在末尾前面只能是数字。
+3.e/E.不能出现在开头和结尾，并且两遍都要有数字，自然数前面不能是符号
+4.符号。可以在开头，可以在e之后，但是不能是最后一个数字。
+public boolean isNumber(String s) {
+        if(s==null) return false;
+        s = s.trim().toLowerCase();   //e and E all become e
+        if(s.length()==0) return false;
+        
+        
+        boolean hasNum = false;
+        boolean hasE = false;
+        boolean hasDot = false;
+        int signal = 0;
+        int n = s.length();
+        for(int i=0;i<n;i++){
+            char c = s.charAt(i);
+            if(!isValid(c)){
+                return false;
+            }
+            if(c>='0'&&c<='9'){
+                hasNum = true;
+            }
+            if(c=='.'){
+                if(hasE||hasDot){
+                    return false;
+                }
+                if(i==n-1&&!hasNum){
+                    return false;
+                }
+                hasDot = true;
+            }
+            if(c=='e'){
+                if(hasE||!hasNum){
+                    return false;
+                }
+                if(i==n-1){
+                    return false;
+                }
+                hasE = true;
+            }
+            if(c=='+'||c=='-'){
+                if(signal==2){
+                    return false;
+                }
+                if(i==n-1){
+                    return false;
+                }
+                if(i>0&&s.charAt(i-1)!='e'){   //如果前面不是e那就是false
+                    return false;
+                }
+                signal++;
+            }
+        }
+        return true;
+    }
+    
+    private boolean isValid(char c){
+        if(c=='+'||c=='-'||c>='0'&&c<='9'||c=='e'||c=='.'){
+            return true;
+        }else return false;
+    }
+
+51.decode ways(dp)
+和爬楼梯合起来看，整道题最麻烦的就是要判断0在的位置。首先构建出dp数组，dp[i]表示字符串0到i-1这段数组中的解码方式数量，最麻烦的是dp[0]=1,这个初始化要注意。然后就是判断字符串i-1到i是不是能用两个字符位表示，能就判断int值是不是在10-26之间，不是的话就dp[i]=dp[i-1];
+public int numDecodings(String s) {
+        if (s.isEmpty() || (s.length() > 1 && s.charAt(0) == '0')) return 0;
+        int[] dp = new int[s.length() + 1];
+        dp[0] = 1;
+        for (int i = 1; i < dp.length; ++i) {
+            dp[i] = (s.charAt(i - 1) == '0') ? 0 : dp[i - 1];
+            if (i > 1 && (s.charAt(i - 2) == '1' || (s.charAt(i - 2) == '2' && s.charAt(i - 1) <= '6'))) {
+                dp[i] += dp[i - 2];
+            }
+        }
+        return dp[s.length()];
+    }
+
+52.climbing stairs(dp)
+从后往前考虑，如果最后是1步，那么就是dp[i-1],如果是2步，那么就是dp[i-2].dp[i]就是表示i层楼梯有多少种方法爬。
+public int climbStairs(int n) {
+        if(n<=1){
+          return 1;  
+        } 
+        int [] results = new int[n+1];
+        results[0] = 1;
+        results[1] = 1;
+        for(int i=2;i<=n;i++){
+            results[i] = results[i-1] + results[i-2];    
+        }
+        return results[n];
+    }
+
+53.gray code
+gray code的书写规则是从0开始，然后改变最右边的数，然后改变从最右边数第一个1的左边的数。以此类推。
+当i=k是，前半部分的gray code 和 i=k-1是一样的，只是高位补0.后半部分的值是前半部分的值从后往前依次加上2^(i-1)。
+public List<Integer> grayCode(int n) {
+       List<Integer> result = new ArrayList<Integer>();      
+       result.add(0);  
+      for(int i=0; i< n; i++)  
+     {  
+        int highestBit = 1<<i;  
+        int len = result.size();  
+        for(int j = len-1; j>=0; j--)  
+        {  
+          result.add(highestBit + result.get(j));  
+        }  
+      }  
+      return result;  
+    }
+
+54.partition list
+不需要把问题想得太复杂，我已开始就假定要有三个list，一个总结果，一个小于给定值 ，一个大于给定值。其实只要两个，最后判断完将小于的最后一个指针指向大于给定值的dummy结点的next就行，返回小于给定值的dummy.next.在循环中嵌套判断语句，可以将判断语句中重复的语句提取出来。
+public ListNode partition(ListNode head, int x) {
+       
+        ListNode moreList = new ListNode(0);
+        ListNode lessList = new ListNode(0);
+        ListNode more = moreList;
+        ListNode less = lessList;
+        if(head==null){
+            return head;
+        }
+        
+        while(head!=null){
+            if(head.val>=x){
+                more.next = head;
+                more = more.next;
+            }else{
+                less.next = head;
+                less = less.next;
+            }
+             head = head.next;
+        }
+        
+        more.next = null;
+        less.next = moreList.next;
+        
+        return lessList.next;
     }
