@@ -1184,3 +1184,200 @@ public int maxArea(int[] height) {
     }
 
 40.combination sum
+
+41.combination
+这道题是求1到n个数，每次只去其中的k个数，求combination。也是一道dfs的题目，跳出的条件就是com.size()==k,只是取数的范围是1到n，不是从0开始取。
+public List<List<Integer>> combine(int n, int k) {
+        List<List<Integer>> results = new ArrayList<>();
+        
+        helper(results,new ArrayList<Integer>(),n,k,1);
+        return results;
+    }
+    
+    private void helper(List<List<Integer>> results, List<Integer> com, int n,int k, int startindex){
+        if(com.size()==k){
+            results.add(new ArrayList<Integer>(com));
+            return;
+        }
+        
+        for(int i=startindex;i<=n;i++){
+            com.add(i);
+            helper(results,com,n,k,i+1);
+            com.remove(com.size()-1);
+        }
+    }
+
+42. combination sum ii
+43. factor combinations	
+这道题其实也是dfs的应用，其实就是回溯法，一开始我们就可以像计算和一样，每一次将应该放入的数字放进list中，然后target就变成target/i,结果中我们需要进行判断，当target为1的时候表示结束了但是有一种情况，就是这个数自己，所以我们需要在判断中再加一个判断，就是com中是否有数字，如果有就把数放进results。
+public List<List<Integer>> getFactors(int n) {
+        
+        List<List<Integer>> results = new ArrayList<>();
+        helper(results,new ArrayList<Integer>(),2,n);
+        return results;
+    }
+    
+    private void helper(List<List<Integer>> results, List<Integer> com, int startindex, int n){
+        if(n==1){
+            if(com.size()>1){
+                results.add(new ArrayList<Integer>(com));
+                return;
+            }
+        }
+        
+        for(int i=startindex;i<=n;i++){
+            if(n%i==0){
+                com.add(i);
+                helper(results,com,i,n/i);
+                com.remove(com.size()-1);
+            }
+        }
+    }
+
+44.valid triangle number
+这道题可以使用双指针来解决。有点像三个数的和那道题，确定一个值，然后另外两个值变化。我们一开始将数组进行排序，确定一个最大值，然后确定最大值的位置-1为右边的点，0为左边的点，因为三角形有效的判断条件是较小的两条边之和大于第三边，所以如果左右两点的和大于最大值，则表明这两个点中间的点都是合格的点，也就是说count+=right+left。然后right—.如果不是的话就是left++.
+public int triangleNumber(int[] nums) {
+        Arrays.sort(nums);
+        
+        int count = 0;
+        for(int i=nums.length-1;i>=0;i--){
+            int left = 0;
+            int right = i-1;
+            while(left<right){
+                if(nums[left]+nums[right]>nums[i]){
+                    count += right-left;
+                    right--;
+                }else{
+                    left++;
+                }
+            }
+        }
+        return count;
+    }
+
+45.sort colors
+首先想到的是分别统计三种颜色各有多少个，然后在他们相应的位置放上他们相应的值，稍微优化一下发现只要统计其中两个颜色的个数就可以了。
+public void sortColors(int[] nums) {
+        int redcnt = 0;
+        int whitecnt = 0;
+        
+        for(int i=0;i<nums.length;i++){
+            if(nums[i]==0) redcnt++;
+            if(nums[i]==1) whitecnt++;
+            
+        }
+        for(int i=0;i<nums.length;i++){
+            if(i<redcnt) nums[i]=0;
+            if(i>=redcnt&&i<whitecnt+redcnt) nums[i]=1;
+            if(i>=whitecnt+redcnt&&i<nums.length) nums[i]=2;
+        }
+        
+    }
+
+这是遍历了两遍，如何遍历一遍就能解决问题呢？受到上面的优化的启发，如果我们直接把2放到最右边，把0放到最左边，那么剩下来的1就应该被放在了他应该在的位置上。
+public void sortColors(int[] nums) {
+        int left = 0, right = nums.length - 1;
+        int i = 0;
+        while(i <= right){
+            // 遇到0交换到前面
+            if(nums[i] == 0){
+                swap(nums, i, left);
+                left++;
+                // 因为左边必定有序，所以可以直接i++
+                i++;
+            // 遇到2交换到后面
+            } else if(nums[i] == 2){
+                swap(nums, i, right);
+                right--;
+            } else {
+            // 遇到1跳过 
+                i++;
+            }
+        }
+    }
+    
+    private void swap(int[] nums, int i1, int i2){
+        int tmp = nums[i1];
+        nums[i1] = nums[i2];
+        nums[i2] = tmp;
+    }
+要注意一点，循环的判断条件是i<=right,不是i<nums.length。
+
+46.subsets 
+public List<List<Integer>> subsets(int[] nums) {
+        List<List<Integer>> results = new ArrayList<>();
+        if(nums.length==0 || nums==null){
+            return new ArrayList<>();
+        }
+        
+        dfs(nums,0,results,new ArrayList<Integer>());
+        return results;
+    }
+    
+    private void dfs(int[] nums, int startindex, List<List<Integer>> results, List<Integer> sub){
+        results.add(new ArrayList<Integer>(sub));
+        
+        for(int i = startindex;i<nums.length;i++){
+            sub.add(nums[i]);
+            dfs(nums,i+1,results,sub);
+            sub.remove(sub.size()-1);
+        }
+    }
+
+47.subsets ii
+这道题相较于上一道题就是要考虑duplicates。就是在放入sub之前要对连续的两个数进行比较，只有不相等才放进去。
+ public List<List<Integer>> subsetsWithDup(int[] nums) {
+        List<List<Integer>> results = new ArrayList<>();
+        if(nums==null || nums.length==0){
+            return results;
+        }
+        Arrays.sort(nums);
+        helper(results,new ArrayList<Integer>(),0,nums);
+        return results;
+    }
+    private void helper(List<List<Integer>> results, List<Integer> sub, int startindex, int[]nums){
+         results.add(new ArrayList<Integer>(sub));
+        
+         for(int i=startindex;i<nums.length;i++){
+             if (i != startindex && nums[i]==nums[i-1]) {
+                continue;
+            }
+             sub.add(nums[i]);
+             helper(results,sub,i+1,nums);
+             sub.remove(sub.size()-1);
+         }
+    }
+
+48.search insert position
+因为题目中写清楚了是sorted array，而且是找元素，所以很自然想到了使用binary tree.这道题只要注意超过最大值的位置是nums.length,以及最后的返回值是end就可以了。
+public int searchInsert(int[] nums, int target) {
+        if(target>nums[nums.length-1]) return nums.length;
+        if(target<nums[0]) return 0;
+        int start = 0;
+        int end = nums.length-1;
+        while(start+1<end){
+            int mid = start+(end-start)/2;
+            if(nums[mid]==target){
+                return mid;
+            }else if(nums[mid]>target){
+                end = mid;
+            }else start = mid;
+        }
+        if(nums[start]==target) return start;
+        if(nums[end]==target) return end;
+        
+        return end;
+    }
+
+49.binary tree inorder traversal
+    public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> results = new ArrayList<Integer>();
+        helper(root,results);
+        return results;
+    }
+    private void helper(TreeNode root,List<Integer> results){
+        if(root==null) return;
+        helper(root.left,results);
+        results.add(root.val);
+        helper(root.right,results);
+    }
