@@ -1699,3 +1699,43 @@ public int findDuplicate(int[] nums) {
         }
         return slow;
     }
+
+63.Intersection of Two Linked Lists
+这道题就是计算两个节点有没有重合，我们并不能直接比较节点是否相等，因为肯定不等，因为他们在内存中的位置不等。所以只能比较指向同一个节点的两个指针里面的值是否相等。为了方便我们让两个list等长。
+public ListNode getIntersectionNode(ListNode headA, ListNode headB) {
+        if(headA==null || headB==null) return null;
+        int cntHeadA = 0;
+        int cntHeadB = 0;
+        ListNode a = headA;
+        ListNode b = headB;
+        while(a!=null){
+            cntHeadA++;
+            a = a.next;
+        }
+        while(b != null){
+            cntHeadB++;
+            b = b.next;
+        }
+        if(cntHeadA > cntHeadB){
+            int diff = cntHeadA - cntHeadB;
+            for(int i=0;i<diff;i++){
+                headA = headA.next;
+            }
+        }else{
+            int diff = cntHeadB - cntHeadA;
+            for(int i=0;i<diff;i++){
+                headB = headB.next;
+            }
+        }
+        ListNode result = null;
+        while(headA!=null){
+            if(headA.val == headB.val){
+                result =  headA;
+                break;
+            }else{
+                headA = headA.next;
+                headB = headB.next;
+            }
+        }
+        return result;
+    }
