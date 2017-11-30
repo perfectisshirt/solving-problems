@@ -1600,4 +1600,61 @@ public int findPeakElement(int[] nums) {
         else return end;
     }
 
-59.
+59.find the celebrity
+如果A认识B，那么B有可能是名人，A肯定不是名人，所以我们第一次遍历可以找到一个疑似名人的候选人，第二次遍历的时候可以对这个候选人进行判断，首先自己等于自己继续循环，不能就要看他自己不能认识别人，别人必须认识自己，如果两者有一个不满足就直接返回-1，如果都满足则输出位置。
+public int findCelebrity(int n) {
+        if(n<=1) return n;
+        int candidate = 0;
+        for(int i = 1;i<n;i++){
+            if(!knows(i,candidate)){
+                candidate = i;
+            }
+        }
+        
+        for(int j = 0;j<n;j++){
+            if(j==candidate) continue;
+            if(!knows(j,candidate)||knows(candidate,j)){
+                return -1;
+            }
+        }
+        return candidate;
+    }
+
+60.find the duplicate number
+这道题有几个限制条件，如果少了一个constant extra space可以用数组解答，总共用n个数，那就生成一个长度为n的数组，但是有n+1个位置，肯定有一个位置的值大于1，找到就可以了。
+public int findDuplicate(int[] nums) {
+        int len = nums.length;
+        int result = 0;
+        int[] array = new int[len];
+        for(int i=0;i<len;i++){
+            array[nums[i]]++;
+        }
+        
+        for(int i=0;i<array.length;i++){
+            if(array[i]>1){
+                result = i;
+            }
+        }
+        return result;
+        
+    }
+如果能对原数组进行修改，我们可以进行排序，然后查找。如果constant extra space，我想到了位运算的异或,但是两个相同的数的异或为0，不方便确定哪一个数开始为0，所以pass。网上一个人的解法是将题目转化成链表问题，查找从哪个点开始循环的。
+public int findDuplicate(int[] nums) {
+        int slow = 0;
+        int fast = 0;
+        // 找到快慢指针相遇的地方
+        do{
+            slow = nums[slow];
+            fast = nums[nums[fast]];
+        } while(slow != fast);
+        int find = 0;
+        // 用一个新指针从头开始，直到和慢指针相遇
+        while(find != slow){
+            slow = nums[slow];
+            find = nums[find];
+        }
+        return find;
+    }
+
+61.linked list cycle
+
