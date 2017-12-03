@@ -1920,5 +1920,209 @@ public String reverseWords(String s) {
 
 71.sort list
 
-72.intersection of two arrays ii
+72.intersection of two arrays 
+因为只是将出现的共同部分的其中一个放进最后的数组中，所以我想到了使用hashset来存储数据。有几个问题需要注意，就是最后的结果的数组的大小要是正好的，不能有空余空间。hashset.iterator遍历返回的是对象，要进行类型转换。
+ public int[] intersection(int[] nums1, int[] nums2) {
+        HashSet<Integer> hs = new HashSet<Integer>();
+        if(nums1==null || nums2==null || nums1.length==0 || nums2.length==0){
+            return new int[0];
+        }
+        Arrays.sort(nums1);
+        Arrays.sort(nums2);
+        
+        int index1 = 0;
+        int index2 = 0;
+        while(index1<nums1.length && index2<nums2.length){
+            if(nums1[index1]==nums2[index2]){
+                hs.add(nums1[index1]);
+                index1++;
+                index2++;
+            }else if(nums1[index1]>nums2[index2]){
+                index2++;
+            }else index1++;
+        }
+        
+        Iterator itr = hs.iterator();
+        int[] results = new int[hs.size()];
+        int index = 0;
+        while(itr.hasNext()){
+            results[index++] = (int)itr.next();
+        }
+        
+        return results;
+    }
+73. Intersection of two arrays ii
+和上一题相比就是将所有的相同的数据放进结果数组中，所以只要将存储的数据结构从hashset变成arraylist就好了。
+public int[] intersect(int[] nums1, int[] nums2) {
+       if(nums1==null || nums2==null || nums1.length==0 || nums2.length==0){
+           return new int[0];
+       }
+        
+        Arrays.sort(nums1);
+        Arrays.sort(nums2);
+        
+        int index1 = 0;
+        int index2 = 0;
+        int index = 0;
+       ArrayList<Integer> al = new ArrayList<Integer>();
+        while(index1<nums1.length && index2<nums2.length){
+            if(nums1[index1]==nums2[index2]){
+                al.add(nums1[index1]);
+                index1++;
+                index2++;
+            }else if(nums1[index1]>nums2[index2]){
+                index2++;
+            }else{
+                index1++;
+            }
+        }
+        int[] results = new int[al.size()];
+        for(int i=0;i<results.length;i++){
+            results[i] = al.get(i);
+        }
+        
+        return results;
+    }
 
+74.valid sudoku
+一个有效的数独需要满足几个条件，行和列还有一个3X3的正方形中的数字要在1-9之间，或者为空。所以我们构建一个boolean[] visited = new boolean[9];用来表示九个数字有没有被访问过。因此我们只需要对行，列和九宫格进行判断就可以了。
+public boolean isValidSudoku(char[][] board) {
+        boolean[] visited = new boolean[9];
+        
+        for(int i=0;i<9;i++){
+            Arrays.fill(visited,false);
+            for(int j=0;j<9;j++){
+                if(!process(board[i][j],visited)){
+                    return false;
+                }
+            }
+        }
+        
+        for(int j=0;j<9;j++){
+            Arrays.fill(visited,false);
+            for(int i=0;i<9;i++){
+                if(!process(board[i][j],visited)){
+                    return false;
+                }
+            }
+        }
+        
+        for(int i=0;i<9;i+=3){
+            for(int j=0;j<9;j+=3){
+                Arrays.fill(visited,false);
+                for(int k=0;k<9;k++){
+                    if(!process(board[i+k/3][j+k%3],visited)){
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
+    }
+    
+    private boolean process(char c,boolean[] visited){
+        if(c=='.'){
+            return true;
+        }
+        int num = c-'0';
+        if(c<'1'||c>'9'||visited[num-1]){
+            return false;
+        }
+        visited[num-1]=true;
+        return true;
+    }
+
+75.daily temperatures
+题目是：Given a list of daily temperatures, produce a list that, for each day in the input, tells you how many days you would have to wait until a warmer temperature. If there is no future day for which this is possible, put 0 instead.
+
+For example, given the list temperatures = [73, 74, 75, 71, 69, 72, 76, 73], your output should be [1, 1, 4, 2, 1, 1, 0, 0].
+
+Note: The length of temperatures will be in the range [1, 30000]. Each temperature will be an integer in the range [30, 100].
+
+首先要注意的问题就是边界值，就是如果i在数组内，但是j一直找到了最后都没有找到比他大的数，也就是小于等于当前数怎么办。还有就是i到最后了，results[index]=0;
+public int[] dailyTemperatures(int[] temperatures) {
+        if(temperatures==null || temperatures.length==0){
+            return new int[0];
+        }
+        
+        int len = temperatures.length;
+        int[] results = new int[len];
+        
+        int index = 0;
+        for(int i=0;i<len;i++){
+            int j=i+1;
+            
+            for(;j<len;j++){
+                
+                if(index<len && temperatures[j]>temperatures[i]){
+                   results[index++] = j-i;
+                   break;
+               }
+           }
+            if(index<len&&j==len&&temperatures[len-1]<=temperatures[i]){
+                results[index++]=0;
+            }
+            if(index<len&&j==len&&i==len-1){
+                results[index]=0;
+            }
+        }
+        return results;
+    }
+
+76. Unique paths
+这道题并不是特别难想，有点像爬楼梯，但是有一点要注意的地方就是第一行和第一列的初始值为1，并不是dp[0][1]和dp[1][0]为1.因为只有一行的话就是只有一种可能性。
+public int uniquePaths(int m, int n) {
+        int[][] dp = new int[m][n];
+        if(m==0 || n==0){
+            return 1;
+        }
+        for(int i=0;i<m;i++){
+            dp[i][0]=1;
+        }
+        for(int i=0;i<n;i++){
+            dp[0][i]=1;
+        }
+        for(int i=1;i<m;i++){
+            for(int j=1;j<n;j++){
+                dp[i][j] = dp[i-1][j] + dp[i][j-1];
+            }
+        }
+        
+        return dp[m-1][n-1];
+    }
+
+77.unique paths ii
+这道题和上一题相比多了一个障碍物的判断和抉择。在判断的时候出了点问题，如果发现有障碍，则后面都是0.状态转移方程则应该是发现障碍则方程为0，表示不通。
+public int uniquePathsWithObstacles(int[][] obstacleGrid) {
+        if(obstacleGrid==null||obstacleGrid.length==0||obstacleGrid[0].length==0){
+            return 0;
+        }
+        int m = obstacleGrid.length;
+        int n = obstacleGrid[0].length;
+        
+        int[][] dp = new int[m][n];
+        for(int i=0;i<m;i++){
+            if(obstacleGrid[i][0]!=1){
+                dp[i][0]=1;
+            }else
+                break;
+        }
+        for(int i=0;i<n;i++){
+            if(obstacleGrid[0][i]!=1){
+                dp[0][i]=1;
+            }else
+                break;
+        }
+        
+        for(int i=1;i<m;i++){
+            for(int j=1;j<n;j++){
+                if(obstacleGrid[i][j]==1){
+                    dp[i][j] = 0;
+                }else{
+                    dp[i][j] = dp[i-1][j]+dp[i][j-1];
+                }
+            }
+        }
+        
+        return dp[m-1][n-1];
+    }
