@@ -2126,3 +2126,19 @@ public int uniquePathsWithObstacles(int[][] obstacleGrid) {
         
         return dp[m-1][n-1];
     }
+ 78.nim game
+ 其实就一到脑筋急转弯的题目。
+ public boolean canWinNim(int n) {
+        if(n%4 == 0) return false;
+        else return true;
+
+    }
+ 79.delete node in a linked list
+删除一个结点并不是一定要找到被删除结点的前一个节点，当然也要看题目的意思，如果题目要求不能修改结点的值，那么就只能对结点本身进行修改了。这里可以将后一个结点的值赋给前一个结点，然后前一个结点的next指针指向后一个节点的后一个结点就可以了。
+public void deleteNode(ListNode node) {
+        if(node==null){
+            return;
+        }
+        node.val = node.next.val;  
+        node.next = node.next.next;  
+    }
