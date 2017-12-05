@@ -50,13 +50,6 @@ first version:首先将两个数组排序，然后依次对比其中的数字，
 15.maximum subarray(再做一遍)
 用到了动态规划的方法，kadane algorithms，假设存在A[0,i]Max[I]就是0到I的最大区间，要求要一个Max[I+1]=Max[I]+A[I+1],但是要保证这个值是大于零的。
 
-16.majority number
-思路一：利用java的特性，使用Collections.sort()对arraylist进行排序，只需要取出最中间的数就行了，因为题目说明了肯定存在。
-思路二：对arraylist进行遍历，如果下一个数和上一个数是相同的，计数器加一。利用的原理就是如果一个数出现的次数高于其他的数字的话，那么最后赋值的一定是那个majority number.
-17.majority number ii
-思路一：使用hashmap，将arraylist中的数和这个数出现的次数存放在hashmap中，然后比较他们的次数取最大值。只要题目中确定有且只有一个这样的值，这个方法都适用。majority number iii就是一个例子。
-思路二：
-18.majority number iii
 19.merge sorted array
 利用从后往前的思想将两个数组的最后一个数字进行比较，依次向前进行比较。之所以这么做是因为题目给了提示A数组足够大。
 
@@ -767,6 +760,38 @@ public int firstUniqChar(String s) {
     }
 
 19.permutation(dfs)再做一遍
+这是一道经典的dfs的题目，在题目中所有的数都是distinct，所以不需要考虑duplicates的问题。但是在Helper类里面我们需要加入一个set,都是将数组遍历完，但是没有startindex，我们需要保证放进去的数都是不重复的。
+public List<List<Integer>> permute(int[] nums) {
+        List<List<Integer>> results = new ArrayList<>();
+        if(nums==null) return results;
+        if(nums.length==0){
+            results.add(new ArrayList<Integer>());
+            return results;
+        }
+        
+        List<Integer> permutation = new ArrayList<Integer>();
+        Set<Integer> set = new HashSet<Integer>();
+        helper(results,permutation,nums,set);
+        return results;
+    }
+    
+    private void helper(List<List<Integer>> results, List<Integer> permutation, int[] nums, Set<Integer> set){
+        if(permutation.size()==nums.length){
+            results.add(new ArrayList<Integer>(permutation));
+            return;
+        }
+        for(int i=0;i<nums.length;i++){
+            if(set.contains(nums[i])){
+                continue;
+            }
+            
+            permutation.add(nums[i]);
+            set.add(nums[i]);
+            helper(results,permutation,nums,set);
+            set.remove(nums[i]);
+            permutation.remove(permutation.size()-1);
+        }
+    }
 
 20.add two numbers(linkedlist)
 这道题最重要的一点就是数字相加的进位处理问题。这样的处理也可以处理二进制的数字问题，carry = temp/10,二进制就是temp/2;temp%=10,二进制就是temp%2.
@@ -2336,4 +2361,162 @@ public boolean canPermutePalindrome(String s) {
         return true;
     }
 
-89.
+89.permutations ii
+对应着19题一起看。相对于19题来说数字是可能出现duplicates的。我们可以使用一个visited数组来记录数组中的数是不是已经被访问了。
+public List<List<Integer>> permuteUnique(int[] nums) {
+        List<List<Integer>> results = new ArrayList<>();
+        if(nums==null){
+            return results;
+        }
+        if(nums.length==0){
+            results.add(new ArrayList<Integer>());
+            return results;
+        }
+        Arrays.sort(nums);
+        List<Integer> permutation = new ArrayList<Integer>();
+        int[] visited = new int[nums.length];
+        for ( int i = 0; i < visited.length; i++){
+            visited[i] = 0;
+        }
+        helper(results,permutation,nums,visited);
+        return results;
+    }
+    
+    private void helper(List<List<Integer>> results, List<Integer> permutation, int[]nums, int [] visited){
+        if(permutation.size()==nums.length){
+            results.add(new ArrayList<Integer>(permutation));
+            return;
+        }
+        
+        for(int i=0;i<nums.length;i++){
+            if ( visited[i] == 1 || ( i != 0 && nums[i] == nums[i - 1]
+            && visited[i-1] == 0)){
+                continue;
+            }
+            visited[i]=1;
+            permutation.add(nums[i]);
+            helper(results,permutation,nums,visited);
+            permutation.remove(permutation.size()-1);
+            visited[i]=0;
+        }
+    }
+
+90.majority element
+思路一：利用java的特性，使用Collections.sort()对arraylist进行排序，只需要取出最中间的数就行了，因为题目说明了肯定存在。
+思路二：对arraylist进行遍历，如果下一个数和上一个数是相同的，计数器加一。利用的原理就是如果一个数出现的次数高于其他的数字的话，那么最后赋值的一定是那个majority number.
+public int majorityElement(int[] nums) {
+        Arrays.sort(nums);
+        int start = 0;
+        int end = nums.length-1;
+        int mid = start+(end-start)/2;
+        return nums[mid];
+    }
+91.majority element ii
+思路一：使用hashmap，将arraylist中的数和这个数出现的次数存放在hashmap中，然后比较他们的次数取最大值。只要题目中确定有且只有一个这样的值，这个方法都适用。majority number iii就是一个例子。
+
+92.majority element iii
+
+93.lonely pixel i
+建立两个数组分别计算行和列中的b的数量，第一遍扫描就是统计数量，第二遍扫描的时候进行判断，如果发现了picture[i][j]==‘B’，判断这一行这一列是不是等于1，是就意味着一个满足的点。
+public int findLonelyPixel(char[][] picture) {
+        if(picture==null || picture.length==0 || picture[0].length==0){
+            return 0;
+        }
+        
+        int col = picture.length;
+        int row = picture[0].length;
+        int[] colN = new int[col];
+        int[] rowN = new int[row];
+        int count = 0;
+        
+        Arrays.fill(colN,0);
+        Arrays.fill(rowN,0);
+        
+        for(int i=0;i<col;i++){
+            for(int j=0;j<row;j++){
+               if(picture[i][j]=='B'){
+                   colN[i]++;
+                   rowN[j]++;
+               }
+            }
+        }
+        
+        for(int i=0;i<col;i++){
+            for(int j=0;j<row;j++){
+                if(picture[i][j]=='B'){
+                    if(colN[i]==1&&rowN[j]==1){
+                    count++;
+                    }
+                }   
+            }
+        }
+        return count;
+    }
+
+94.lonely pixel ii（再看一遍）
+这道题比上一题麻烦的是还要进行判断有b的行中出现的位置要相同。
+public int findBlackPixel(char[][] picture, int N) {
+        if(picture==null || picture.length==0 || picture[0].length==0){
+            return 0;
+        }
+        
+        int count = 0;
+        int[] row = new int[picture.length];
+        int[] col = new int[picture[0].length];
+        boolean[][] visited = new boolean[picture.length][picture[0].length];
+        
+        for(int i=0;i<picture.length;i++){
+            for(int j=0;j<picture[0].length;j++){
+                visited[i][j]=false;
+            }
+        }
+        for(int i=0;i<picture.length;i++){
+            for(int j=0;j<picture[0].length;j++){
+                if(picture[i][j]=='B'){
+                    row[i]++;
+                    col[j]++;
+                    visited[i][j]=true;
+                }
+            }
+        }
+        
+       for(int i=0;i<picture.length;i++){
+            for(int j=0;j<picture[0].length;j++){
+                if (picture[i][j] == 'B' && row[i] == N && col[j] == N) {  
+                    String iStr = String.valueOf(picture[i]);  
+                    int kCount = 0;  
+                    for (int k = 0; k < picture.length; k++) {  
+                        if (i != k && picture[k][j] == 'B') {  
+                            String kStr = String.valueOf(picture[k]);  
+                            if (!iStr.equals(kStr)) break;  
+                            else kCount++;  
+                        }  
+                    }  
+                    if (kCount == N-1) count++;  
+                }  
+            }
+       }
+        return count;
+    }
+
+95.find pivot index
+这题其实不难，是我想复杂了。我开始想通过binary tree做，结果发现不行，第一他并没有顺序，第二如果全是负数就会出错。这道题就按照题意去做就行了。先求出所有数字的和，然后用和减去当前的数字，如果是当前的和的两倍就直接弹出，因为是从左往右，找到就弹出肯定是最左边的。如果没找到就继续往右寻找。
+public int pivotIndex(int[] nums) {
+        if(nums.length==0||nums==null){
+            return -1;
+        }
+        int  sum = 0;
+        for(int i=0;i<nums.length;i++){
+            sum += nums[i];
+        }
+        int curSum = 0;
+        for(int i=0;i<nums.length;i++){
+            if(sum-nums[i] == curSum *2){
+                return i;
+            }
+            curSum += nums[i];
+        }
+        return -1;
+    }
+
+96.
