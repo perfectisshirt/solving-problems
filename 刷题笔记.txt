@@ -2142,3 +2142,198 @@ public void deleteNode(ListNode node) {
         node.val = node.next.val;  
         node.next = node.next.next;  
     }
+
+80.longest absolute file path
+我第一反应就是树的depth.但是题目的要求里面要求的并不是最深的目录，而是扎到最长的文件名。我们使用hashtable来存储需要使用的数据，当前的level与当前level的字符长度相对应。在遇到关于深度的问题的时候，尤其是和不同的深度的内容有关的时候可以考虑使用hashmap来建立两者的对应。
+public int lengthLongestPath(String input) {
+        HashMap<Integer,Integer> hm = new HashMap<Integer,Integer>();
+        hm.put(0,0);
+        int res = 0;
+        for(String s:input.split("\n")){
+            int level = s.lastIndexOf("\t")+1;
+            int len = s.substring(level).length();
+            if(s.contains(".")){
+                res = Math.max(res,hm.get(level)+len);
+            }else{
+                hm.put(level+1,hm.get(level)+len+1);
+            }
+        }
+        return res;
+    }
+
+81.single number
+每个数字都重复了两遍除了一个数字，一个数字和出现的频率有关当然会想到使用Hashmap来存储数字和频率之间的关系。但是我们可以使用^来判断，因为两个相同的数字异或为0，那么整个数组进行异或之后就是只剩下了那个结果。
+public int singleNumber(int[] nums) {
+        Arrays.sort(nums);
+        int result = nums[0];
+        for(int i=1;i<nums.length;i++){
+            result = result ^ nums[i];
+        }
+        return result;
+    }
+
+82.single number ii
+利用位运算。想不起来对于数字题目怎么解，或者题目要求的时间复杂度小，可以考虑使用位运算来解答。因为每一个数字出现了三次，所以这三个数字对应的1的位置出现了三次，我们统计出他们出现的次数然后%3，这样就可以保证最后剩下的数字就是我们想要找的数字了。
+public int singleNumber(int[] A) {
+       int[] digits = new int[32];  
+    for(int i=0;i<32;i++)  
+    {  
+        for(int j=0;j<A.length;j++)  
+        {  
+            digits[i] += (A[j]>>i)&1;  
+        }  
+    }  
+    int res = 0;  
+    for(int i=0;i<32;i++)  
+    {  
+        res += (digits[i]%3)<<i;  
+    }  
+    return res;  
+        
+    }
+
+83.single number iii
+因为这道题存在着两个不同的只出现一次的数字，如果我们能将这两个数分别放在不同的数组中就能够使用single number的解法了。其实解法某种程度是利用了大小的划分，将两个数进行大小的划分。我们将数组中的每个数进行一遍XOR，最后得到的数是两个不同的数的异或。我们需要找到一个值，这个值就是一个标准量将两个结果值进行划分的对比标准。因为其他的数字都是两个两个出现，所以肯定相同的数字会被划分在同一个分组里面。如何找到这个划分的数字？将number = res&(~(res-1));就是寻找从右往左寻找第一个为1的位，也就是第一个两个数不同的位。
+public int[] singleNumber(int[] nums) {
+        int AXORB = 0;
+        for (int num : nums) {
+            AXORB ^= num; 
+        }
+        // pick one bit as flag
+        int bitFlag = (AXORB & (~ (AXORB - 1)));
+        int[] res = new int[2];
+        for (int num : nums) {
+            if ((num & bitFlag) == 0) {        //位运算的优先级不高要注意
+                res[0] ^= num;
+            } else {
+                res[1] ^= num;
+            }
+        }
+        return res;
+    }
+
+84.odd even linked list
+要求奇数的点在偶数的点之前。这题并不难，可以使用双指针，一个指向奇数点，一个指向偶数点，但是需要注意空指针的判断。
+public ListNode oddEvenList(ListNode head) {
+        if(head==null || head.next==null){
+            return head;
+        }
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        ListNode point = head.next;
+        ListNode Odd = head;
+        ListNode Even = head.next;
+        while(Odd!=null && Even !=null && Even.next!=null){
+            Odd.next = Even.next;
+            Odd = Odd.next;
+            Even.next = Odd.next;
+            Even = Even.next;
+        }
+        Odd.next = point;
+        
+       return dummy.next;
+    }
+
+85.wiggle sort
+nums[0] <= nums[1] >= nums[2] <= nums[3]...
+将数组先进行排序，然后将第三个数字和第二个交换，第五个和第四个交换。
+public void wiggleSort(int[] nums) {
+        if(nums.length==0||nums==null){
+            return;
+        }
+        
+        Arrays.sort(nums);
+        for(int i=2;i<nums.length;i+=2){
+            int temp = nums[i];
+            nums[i] = nums[i-1];
+            nums[i-1] = temp;
+        }
+    }
+
+86.wiggle sort ii
+(nums.length+1)>>1,其实就是找中间的位置mid。temp[i] = (i & 1) == 0 ?  nums[--s] : nums[--t] ;从中间先取值，然后最后一个值，然后mid-1，然后end-1，依次往后。(i&1)==0用以判断奇偶其实就是用以间隔执行取值语句。
+public void wiggleSort(int[] nums) {
+        Arrays.sort(nums);
+        
+        int[] temp = new int[nums.length];
+        int s = (nums.length + 1) >> 1, t = nums.length;
+        for (int i = 0; i < nums.length; i++) {
+            temp[i] = (i & 1) == 0 ?  nums[--s] : nums[--t] ;
+        }
+ 
+        for (int i = 0; i < nums.length; i++)
+            nums[i] = temp[i];
+    }
+
+87.search for a range
+binary tree的经典题目。分别找开始点和结束点。
+public int[] searchRange(int[] nums, int target) {
+        int[] result = {-1,-1};
+        if(nums.length==0 || nums==null){
+            return result;
+        }
+        
+        
+        int left = 0;
+        int right = 0;
+        
+        
+        int start = 0;
+        int end = nums.length-1;
+        while(start+1<end){
+            int mid = start + (end-start)/2;
+            if(nums[mid]<target){
+                start = mid;
+            }else {
+                end = mid;
+            }
+        }
+        if(nums[start]==target)
+            left = start;
+        else if(nums[end]==target) left = end;
+        else left=-1;
+        
+        start = 0;
+        end = nums.length-1;
+        while(start+1<end){
+            int mid = start+(end-start)/2;
+            if(nums[mid]>target){
+                end = mid;
+            }else{
+                start  = mid;
+            }
+        }
+        if(nums[end]==target) 
+            right = end;
+        else if(nums[start]==target) right = start;
+        else right = -1;
+        
+        result[0]=left;
+        result[1]=right;
+        return result;
+    }
+
+88.palindrome permutation
+要抓住palindrome的特征，如果每个字符都是出现偶数次数则肯定是，如果只有一个字符出现奇数次也肯定是。
+public boolean canPermutePalindrome(String s) {
+        int[] results = new int[256];
+        if(s==null||s.length()==0){
+            return false;
+        }
+        for(int i=0;i<s.length();i++){
+            results[s.charAt(i)]++;
+        }
+        boolean hasOdd = false;
+        for(int i=0;i<results.length;i++){
+            if(results[i]%2!=0){
+                if(!hasOdd){
+                    hasOdd = true;
+                }else{
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+89.
