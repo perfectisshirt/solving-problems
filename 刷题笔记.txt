@@ -2197,7 +2197,7 @@ public int singleNumber(int[] nums) {
     }
 
 82.single number ii
-利用位运算。想不起来对于数字题目怎么解，或者题目要求的时间复杂度小，可以考虑使用位运算来解答。因为每一个数字出现了三次，所以这三个数字对应的1的位置出现了三次，我们统计出他们出现的次数然后%3，这样就可以保证最后剩下的数字就是我们想要找的数字了。
+利用位运算。想不起来对于数字题目怎么解，或者题目要求的时间复杂度小，可以考虑使用位运算来解答。因为每一个数字出现了三次，所以这三个数字对应的1的位置出现了三次，我们统计出他们出现的次数然后%3，这样就可以保证最后剩下的数字就是我们想要找的数字了。(digits[i]%3)<<i就相当于把每一位找准自己的位置，比如在十进制中的十位，那个位置的数字进行加法的时候需要乘以10，同样的在二进制中需要乘以2，就是向左移动相应的位置。我们使用一个数组来存储一个数字以32位二进制的表示。
 public int singleNumber(int[] A) {
        int[] digits = new int[32];  
     for(int i=0;i<32;i++)  
@@ -2668,7 +2668,7 @@ public int missingNumber(int[] nums) {
         }
         sum += len;
         return sum-subSum;
-    }
+    }
 还有一种方法就是位运算，其实和数学方法差不多，将0-n个数XOR，然后将数组中的数进行XOR，最后这两个数进行XOR就是结果。a^b=c, 可知c^b=a.
 int res = 0;
         for(int i=0;i<nums.length;i++){
@@ -2690,3 +2690,95 @@ public int hammingDistance(int x, int y) {
         }
         return count;
     }
+103.number of 1 bits
+这道题看似和之前的题目一样，但是会出现一个问题，就是TEL,所以我们需要自己加上一个长度限制。
+public int hammingWeight(int n) {
+        int res = 0;
+        for (int i = 0; i < 32; ++i) {
+            res += (n & 1);
+            n = n >> 1;
+        }
+        return res;
+    }
+
+104.counting bits
+判断一个数是不是2的指数的快捷方法i&(i-1).如果为0就表示是2的指数。规律就是i中1的个数等于i&(i-1)对应的1的个数加上1.
+public int[] countBits(int num) {
+        int[] results = new int[num+1];
+        Arrays.fill(results,0);
+        for(int i=1;i<num+1;i++){
+            results[i] = results[i&(i-1)] + 1;
+        }
+        return results;
+    }
+
+105.reverse bits
+防止被多次调用。
+ private final Map<Byte, Integer> cache = new HashMap<Byte, Integer>();
+    // you need treat n as an unsigned value
+    public int reverseBits(int n) {
+        byte[] bytes = new byte[4];
+    for (int i = 0; i < 4; i++) // convert int into 4 bytes
+        bytes[i] = (byte)((n >>> 8*i) & 0xFF);
+    int result = 0;
+    for (int i = 0; i < 4; i++) {
+        result += reverseByte(bytes[i]); // reverse per byte
+        if (i < 3)
+            result <<= 8;
+    }
+    return result;
+    }
+    private int reverseByte(byte b) {
+    Integer value = cache.get(b); // first look up from cache
+    if (value != null)
+        return value;
+    value = 0;
+    // reverse by bit
+    for (int i = 0; i < 8; i++) {
+        value += ((b >>> i) & 1);
+        if (i < 7)
+            value <<= 1;
+    }
+    cache.put(b, value);
+    return value;
+}
+
+最直接的方法就是从原来的数的低位逐位调用，然后将res向左移位然后|.
+public int reverse(int n){
+    int res = 0;
+    for(int i=0;i<32;i++){
+        res = res<<1 | n&1;
+        n = n>>1; 
+    }
+    return res;
+}
+
+106.find the difference
+我之前想到的一个方法是将原来的string放进数组，然后数出每一位出现了多少次，然后在t中如果发现哪一个数为0就是这个数。但是如果原先的数是’a‘，后来的是’aa’，那就错了。所以应该向下面这种做法。
+ public char findTheDifference(String s, String t) {
+        int[] array = new int[26];
+        int[] arrayT = new int[26];
+        char res = ' ';
+        for(int i=0;i<s.length();i++){
+            array[s.charAt(i)-'a']++;
+        }
+        for(int i=0;i<t.length();i++){
+           arrayT[t.charAt(i)-'a']++;
+        }
+        
+        for(int i=0;i<26;i++){
+            if(array[i]!=arrayT[i]){
+                res = (char)('a'+i);
+            }
+        }
+        return res;
+    }
+当然，这道题也可以用bit manipulation.这里的res必须赋值为0，如果是’ ‘则会将这个空格符的ASCII code 转化为整数进行计算。
+        char res = 0;
+        for(char c: s.toCharArray()){
+            res ^= c;
+        }
+        for(char c: t.toCharArray()){
+            res ^= c;
+        }
+        return res;
