@@ -2656,4 +2656,37 @@ public TreeNode sortedArrayToBST(int[] nums) {
         return root;
     }
 
-101.
+101.missing number
+总共有n个数字，最简单的方法就是将将这n个数字全部加起来减去数组中的数字和，差就是少掉的数。
+public int missingNumber(int[] nums) {
+        int len = nums.length;
+        int sum = 0;
+        int subSum = 0;
+        for(int i=0;i<len;i++){
+            subSum += nums[i];
+            sum += i;
+        }
+        sum += len;
+        return sum-subSum;
+    }
+还有一种方法就是位运算，其实和数学方法差不多，将0-n个数XOR，然后将数组中的数进行XOR，最后这两个数进行XOR就是结果。a^b=c, 可知c^b=a.
+int res = 0;
+        for(int i=0;i<nums.length;i++){
+            res ^= nums[i];
+        }
+        int results = 0;
+        for(int i=0;i<nums.length+1;i++){
+            results ^= i;
+        }
+        return results ^ res;
+102.hamming distance
+求两个整数转换成二进制有多少位不同。将两个数XOR，有1的位就表示两个数不同的地方。然后统计结果中1的个数就可以了。
+public int hammingDistance(int x, int y) {
+        int result = x ^ y;
+        int count = 0;
+        while(result!=0){
+            count += result & 1;
+            result = result>>1;
+        }
+        return count;
+    }
