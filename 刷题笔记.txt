@@ -240,8 +240,7 @@ for(int i=0;i<numCourse;i++){
 7.zombie in matrix（再做一遍）
 这道题不能用和上一题完全相同的方法去解答。首先题目的意思是找到多久人类全部变成僵尸，所以我们需要设置一个变量来统计天数，同时还需要一个变量来统计人数，因为当人数为0的时候就结束判断了。我们使用queue来存放僵尸的位置。所以在使用bfs的时候需要明白我们在queue中到底存放的是什么数据。因为存放的是僵尸，所以判断是不是在边界里面的条件就应该是当前的点是不是人类。
 
-8.graph valid tree（再做一遍）
-一个valid的tree首先不能有环，也就是说edges.length!=n-1;因为是无序的，所以我们使用hashset来存储邻居节点。满足的条件就是放在hash表中的点的个数等于所有点的个数。
+
 
 9.clone graph
 我们使用一个hashmap来存储以前的点和现在的点，为的是让这两个点能够对应。因为graph包含点和边，所以我们除了要复制点还要复制边。
@@ -2782,3 +2781,294 @@ public int reverse(int n){
             res ^= c;
         }
         return res;
+
+107.power of two
+这个结论在上面的题目用到过，只是需要注意负数和0的情况。
+public boolean isPowerOfTwo(int n) {
+        if(n<=0) return false;
+        return (n&(n-1))==0;
+    }
+
+108.minimum moves to equal array elements
+数组有N个数，每次选n-1个数加一，最少有多少步能让数组中的数都相等。我们可以换一种方法，就是将最大的数减一，等到所有的数都是最小值了就相等了。
+public int minMoves(int[] nums) {
+        int mn = Integer.MAX_VALUE, res = 0;
+        for (int num : nums) mn = Math.min(mn, num);
+        for (int num : nums) res += num - mn;
+        return res;
+    }
+
+109.valid anagram
+求字谜。首先判断两个string的长度是否一样，如果不一样肯定不是。接下来可以对两个string进行排序，然后挨个比较。
+public boolean isAnagram(String s, String t) {
+        if(s.length()!=t.length()){
+            return false;
+        }
+        char[] s1 = s.toCharArray();
+        char[] t1 = t.toCharArray();
+        Arrays.sort(s1);
+        Arrays.sort(t1);
+        for(int i=0;i<s1.length;i++){
+            if(s1[i]!=t1[i]){
+                return false;
+            }
+        }
+        return true;
+    }
+110.find all anagrams in a string
+这道题没有看上去那么简单，光使用嵌套式循环会出现TEL,所以我们需要想其他的方法。
+ public List<Integer> findAnagrams(String s, String p) {
+       List<Integer> list = new ArrayList<>();
+    if (s == null || s.length() == 0 || p == null || p.length() == 0) return list;
+    int[] hash = new int[256];
+    for (char c : p.toCharArray()) {
+        hash[c]++;
+    }
+    int left = 0, right = 0, count = p.length();
+    while (right < s.length()) {
+        if (hash[s.charAt(right++)]-- >= 1) count--; 
+
+        if (count == 0) list.add(left);
+
+        if (right - left == p.length() && hash[s.charAt(left++)]++ >= 0) count++;
+    }
+    return list;
+    }
+
+111.graph valid tree
+判断一个图是不是树我们首先要判断他是不是联通以及是否出现了环。如果出现了环也就是边的个数不等于点的个数减一。是不是联通则可以通过bfs来判断。
+public boolean validTree(int n, int[][] edges) {
+        if(n==0){
+            return false;
+        }
+        int edgeNumber = edges.length;
+        if(n-1!=edgeNumber){
+            return false;
+        }
+        
+        Map<Integer,Set<Integer>> graph = initialGraph(n,edges);
+        
+        Queue<Integer> queue = new LinkedList<>();
+        Set<Integer> set = new HashSet<Integer>();
+        queue.offer(0);
+        set.add(0);
+        
+        while(!queue.isEmpty()){
+            Integer node = queue.poll();
+            for(Integer neighbour: graph.get(node)){
+                if(set.contains(neighbour)){
+                    continue;
+                }
+                queue.offer(neighbour);
+                set.add(neighbour);
+            }
+        }
+        
+        return (set.size()==n);
+    }
+    
+    private Map<Integer,Set<Integer>> initialGraph(int n, int[][] edges){
+        Map<Integer,Set<Integer>> map = new HashMap<>();
+        for(int i=0;i<n;i++){
+            map.put(i,new HashSet<Integer>());
+        }
+        
+        for(int i=0;i<edges.length;i++){
+            int u = edges[i][0];
+            int v = edges[i][1];
+            
+            map.get(u).add(v);
+            map.get(v).add(u);
+        }
+        return map;
+    }
+
+还可以使用dfs来解答，但是我们需要建立一个辅助数组boolean来帮助判断当前的点是不是被访问过。
+public boolean validTree(int n,int[][]edges) 
+if(n==0) return false;
+        if(edges.length!=n-1){
+            return false;
+        }
+        
+        Map<Integer,List<Integer>> graph = new HashMap<>();
+        graph = initialMap(n,edges);
+        boolean[] visited = new boolean[n];
+        if(!helper(0,-1,graph,visited)){
+            return false;
+        }
+        
+        for(boolean b:visited){
+            if(!b){
+                return false;    
+            }
+        }
+        return true;
+}
+    private boolean helper(int cur, int parent, Map<Integer,List<Integer>> graph, boolean[]visited){
+        if(visited[cur]){
+            return false;
+        }
+        visited[cur] = true;
+        
+        for(Integer i:graph.get(cur)){
+            if(i!=parent&&!helper(i,cur,graph,visited)){
+                return false;
+            }
+        }
+        return true;
+    }
+       private Map<Integer,List<Integer>> initialMap(int n, int[][]edges){
+           Map<Integer,List<Integer>> graph = new HashMap<>();
+           for(int i=0;i<n;i++){
+               graph.put(i,new ArrayList<>());
+           }
+           for(int i=0;i<edges.length;i++){
+               int u = edges[i][0];
+               int v = edges[i][1];
+               
+               graph.get(u).add(v);
+               graph.get(v).add(u);
+           }
+           return graph;
+       }
+
+112.symmetric tree
+判断一个数是不是左右对称。我已开始想每一层都判断，但是是按照值来判断。由于空值没办法放进数组所以判断的值是错误的。其实只要简单的判断一个点的左结点和最右边结点的右节点对称就可以了。
+ public boolean isSymmetric(TreeNode root) {
+        if(root == null){
+            return true;
+        }
+        if(root.left==null && root.right==null){
+            return true;
+        }
+        if(root.left==null || root.right==null){
+            return false;
+        }
+        Queue<TreeNode> queue1 = new LinkedList<>();
+        Queue<TreeNode> queue2 = new LinkedList<>();
+        
+        queue1.offer(root.left);
+        queue2.offer(root.right);
+        while(!queue1.isEmpty()&&!queue2.isEmpty()){
+            TreeNode node1 = queue1.poll();
+            TreeNode node2 = queue2.poll();
+            if(node1.val!=node2.val){
+                return false;
+            }
+            if((node1.left!=null&&node2.right==null) || (node1.left==null && node2.right!=null)){
+                return false;
+            }
+            if((node1.right!=null&&node2.left==null) || (node1.right==null && node2.left!=null)){
+                return false;
+            }
+            if(node1.left!=null&&node2.right!=null){
+                queue1.offer(node1.left);
+                queue2.offer(node2.right);
+            }
+            if(node1.right!=null&&node2.left!=null){
+                queue1.offer(node1.right);
+                queue2.offer(node2.left);
+            }
+        }
+        return true;
+    }
+
+113.candy
+因为至少每一个人都有一颗糖，所以给这个数组的初始化是1.从左往右循环一遍，如果右边的值比左边的大，则右边的candy数加1.再从右往左循环一遍，如果左边的ratings比右边的大，那么这个值就取当前值和右边值加一的最大值。
+public int candy(int[] ratings) {
+        if(ratings==null || ratings.length==0){
+            return 0;
+        }
+        
+        int[] candies = new int[ratings.length];
+        Arrays.fill(candies,1);
+        for(int i=1;i<ratings.length;i++){
+            if(ratings[i]>ratings[i-1]){
+                candies[i] = candies[i-1]+1;
+            }
+        }
+        for(int i=ratings.length-2;i>=0;i--){
+            if(ratings[i]>ratings[i+1]){
+                 candies[i] = Math.max(candies[i],candies[i+1]+1);    
+            }
+            
+        }
+        
+        int res = 0;
+        for(int i:candies){
+            res+=i;
+        }
+        return res;
+    }
+
+114.minimum depth of binary tree
+如果一个点只有左结点或者只有右结点，那么他对应的另一个节点就是空，如果这时候if(root == null) return 0;那么去最小值就是0，结果就是错误的，所以这里返回的是Integer.MAX_VALUE;
+public int minDepth(TreeNode root) {
+        if (root == null) {
+            return 0;
+        }
+        return getMin(root);
+    }
+
+    public int getMin(TreeNode root){
+        if (root == null) {
+            return Integer.MAX_VALUE;
+        }
+
+        if (root.left == null && root.right == null) {
+            return 1;
+        }
+
+        return Math.min(getMin(root.left), getMin(root.right)) + 1;
+    }
+
+115.The maze
+这道题用Bfs就能解，但是和之前的题目有一点不一样的就是要在一个方向走到底，当不满足条件的时候才返回。
+class Point {
+        int x,y;
+        public Point(int _x, int _y) {x=_x;y=_y;}
+    }
+    public boolean hasPath(int[][] maze, int[] start, int[] destination) {
+        int m=maze.length, n=maze[0].length;
+        if (start[0]==destination[0] && start[1]==destination[1]) return true;
+        int[][] dir=new int[][] {{-1,0},{0,1},{1,0},{0,-1}};
+        boolean[][] visited=new boolean[m][n];
+        LinkedList<Point> list=new LinkedList<>();
+        visited[start[0]][start[1]]=true;
+        list.offer(new Point(start[0], start[1]));
+        while (!list.isEmpty()) {
+            Point p=list.poll();
+            int x=p.x, y=p.y;
+            for (int i=0;i<4;i++) {
+                int xx=x, yy=y;
+                while (xx>=0 && xx<m && yy>=0 && yy<n && maze[xx][yy]==0) {
+                    xx+=dir[i][0];
+                    yy+=dir[i][1];
+                }
+                xx-=dir[i][0];
+                yy-=dir[i][1];
+                if (visited[xx][yy]) continue;
+                visited[xx][yy]=true;
+                if (xx==destination[0] && yy==destination[1]) return true;
+                list.offer(new Point(xx, yy));
+            }
+        }
+        return false;
+        
+    }
+
+116.path sum
+传统的dfs的题目。
+ public boolean hasPathSum(TreeNode root, int sum) {
+        if(root == null){
+            return false;
+         }
+       
+        if(root.left==null && root.right==null){
+            return root.val==sum;
+        }        
+        
+        return hasPathSum(root.left,sum-root.val)||hasPathSum(root.right,sum-root.val);
+    }
+
+117.
