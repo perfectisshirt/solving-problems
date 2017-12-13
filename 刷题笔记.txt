@@ -228,9 +228,6 @@ for(int i=0;i<numCourse;i++){
 
 
 
-4.binary tree level order traversal
-这是一道标准的bfs的题目。
-
 5.search graph nodes
 这也是一道标准的bfs的题目，为了避免已经判断过的点再次进行判断我们使用hashset来存储数据。
 
@@ -242,8 +239,7 @@ for(int i=0;i<numCourse;i++){
 
 
 
-9.clone graph
-我们使用一个hashmap来存储以前的点和现在的点，为的是让这两个点能够对应。因为graph包含点和边，所以我们除了要复制点还要复制边。
+
 
 10.binary tree serialization
 
@@ -3071,4 +3067,301 @@ class Point {
         return hasPathSum(root.left,sum-root.val)||hasPathSum(root.right,sum-root.val);
     }
 
-117.
+117.path sum ii
+这道题相对于上一题来说就是要将所有的有效路径都存放进数组并且输出。
+public List<List<Integer>> pathSum(TreeNode root, int sum) {  
+    List<List<Integer>> res = new ArrayList<>();  
+    if(root==null)  
+        return res;  
+    List<Integer> item = new ArrayList<Integer>();  
+    item.add(root.val);  
+    helper(root,sum-root.val,item,res);  
+    return res;  
+}  
+private void helper(TreeNode root, int sum, List<Integer> item, List<List<Integer>> res)  
+{  
+    if(root == null)  
+        return;  
+    if(root.left==null && root.right==null && sum==0)  
+    {  
+        res.add(new ArrayList<Integer>(item));  
+        return;  
+    }  
+    if(root.left!=null)  
+    {  
+        item.add(root.left.val);  
+        helper(root.left,sum-root.left.val,item,res);  
+        item.remove(item.size()-1);  
+    }  
+    if(root.right!=null)  
+    {  
+        item.add(root.right.val);  
+        helper(root.right,sum-root.right.val,item,res);  
+        item.remove(item.size()-1);  
+    }          
+}  
+
+118.perfect squares
+这道题刚看到的时候就发现有两个小问题，一个是合成目标数的个数要最少，还有一个就是每一个数都是square.使用dp方法来解答，设置数组dp,表示当前的这个数有几个perfect sqaure。
+public int numSquares(int n) {
+        int[] dp = new int[n+1];
+        Arrays.fill(dp,Integer.MAX_VALUE);
+        dp[0] = 0;
+        for(int i=0;i<=n;i++){
+            for(int j=1;i+j*j<=n;j++){
+                dp[i+j*j] = Math.min(dp[i+j*j],dp[i]+1); 
+            }
+        }
+        return dp[n];
+    }
+n=a+b*b,如果这时候a就是一个完全平方数，那么n就有dp[a]+1,如果不是的话dp[a+b*b],意思就是a+b*b本身就是一个完全平方数。两者取最小值。
+
+119.word ladder
+这道题使用bfs的解法。我们把beginword看成是起始点，然后endword看成是终点，那么就是变成了最少步能到达的问题。每一个变化的过程，也就是换其中一个字符的问题可以用遍历来完成，也就是一个嵌套循环，但是其中要使用到hashset的数据结构，防止重复循环。
+public int ladderLength(String beginWord, String endWord, List<String> wordList) {
+        HashSet<String> dict = new HashSet<>();
+        for(String s : wordList){
+            dict.add(s);
+        }
+        if(beginWord.equals(endWord)){
+            return 1;
+        }
+        
+        Queue<String> queue = new LinkedList<String>();
+        HashSet<String> hs = new HashSet<String>();
+        queue.offer(beginWord);
+        hs.add(beginWord);
+        int length = 1;
+        
+        while(!queue.isEmpty()){
+            length++;
+            
+            int size = queue.size();
+            for(int i=0;i<size;i++){
+                String word = queue.poll();
+                List<String> nextWords = getNextWord(word,dict);
+                for(String str:nextWords){
+                    if(hs.contains(str)){
+                        continue;
+                    }
+                    if(str.equals(endWord)){
+                        return length;
+                    }
+                    queue.offer(str);
+                    hs.add(str);
+                }
+            }
+        }
+        return 0;
+    }
+    
+    private String replaceWord(String word,int i,char c){
+        char[] array = word.toCharArray();
+        array[i]=c;
+        return new String(array);
+    }
+    private List<String> getNextWord(String word,HashSet<String> dict){
+        List<String> nextWords = new ArrayList<String>();
+        for(char c='a';c<='z';c++){
+            for(int i=0;i<word.length();i++){
+                if(word.charAt(i)==c){
+                    continue;
+                }
+                String nextWord = replaceWord(word,i,c);
+                if(dict.contains(nextWord)){
+                    nextWords.add(nextWord);
+                }
+            }
+        }
+        return nextWords;
+    }
+
+120.word ladder ii （没怎么看懂）
+这题已经不简单的是bfs的题目了，而是要转化成图的问题来解答。因为题目中从开始单词，每次换其中一个字母，然后到达最后的目标单词，这就是bfs的特征，但是因为最后要返回一个嵌套List，把所有的可能都返回就涉及到了backtracing也就是dfs。我们将每个单词抽象化成一个节点，然后点到点的距离就是变化。
+public class Solution {
+    public List<List<String>> findLadders(String start, String end,
+            List<String> wordlist) {
+        HashSet<String> dict = new HashSet<>();
+        for(String s:wordlist){
+            dict.add(s);
+        }
+        
+        List<List<String>> ladders = new ArrayList<List<String>>();
+        Map<String, List<String>> map = new HashMap<String, List<String>>();
+        Map<String, Integer> distance = new HashMap<String, Integer>();
+
+        dict.add(start);
+        dict.add(end);
+ 
+        bfs(map, distance, start, end, dict);
+        
+        List<String> path = new ArrayList<String>();
+        
+        dfs(ladders, path, end, start, distance, map);
+
+        return ladders;
+    }
+
+    void dfs(List<List<String>> ladders, List<String> path, String crt,
+            String start, Map<String, Integer> distance,
+            Map<String, List<String>> map) {
+        path.add(crt);
+        if (crt.equals(start)) {
+            Collections.reverse(path);
+            ladders.add(new ArrayList<String>(path));
+            Collections.reverse(path);
+        } else {
+            for (String next : map.get(crt)) {
+                if (distance.containsKey(next) && distance.get(crt) == distance.get(next) + 1) { 
+                    dfs(ladders, path, next, start, distance, map);
+                }
+            }           
+        }
+        path.remove(path.size() - 1);
+    }
+
+    void bfs(Map<String, List<String>> map, Map<String, Integer> distance,
+            String start, String end, Set<String> dict) {
+        Queue<String> q = new LinkedList<String>();
+        q.offer(start);
+        distance.put(start, 0);
+        for (String s : dict) {
+            map.put(s, new ArrayList<String>());
+        }
+        
+        while (!q.isEmpty()) {
+            String crt = q.poll();
+
+            List<String> nextList = expand(crt, dict);
+            for (String next : nextList) {
+                map.get(next).add(crt);
+                if (!distance.containsKey(next)) {
+                    distance.put(next, distance.get(crt) + 1);
+                    q.offer(next);
+                }
+            }
+        }
+    }
+
+    List<String> expand(String crt, Set<String> dict) {
+        List<String> expansion = new ArrayList<String>();
+
+        for (int i = 0; i < crt.length(); i++) {
+            for (char ch = 'a'; ch <= 'z'; ch++) {
+                if (ch != crt.charAt(i)) {
+                    String expanded = crt.substring(0, i) + ch
+                            + crt.substring(i + 1);
+                    if (dict.contains(expanded)) {
+                        expansion.add(expanded);
+                    }
+                }
+            }
+        }
+
+        return expansion;
+    }
+}
+
+121.binary tree level order traversal
+这是一道标准的bfs的题目，按照level逐层提取出每一层的数，然后在一层提取完了之后将这一层的list加到最后的results中就可以了。
+public List<List<Integer>> levelOrder(TreeNode root) {
+        List<List<Integer>> results = new ArrayList<>();
+        
+        if(root == null){
+            return results;
+        }
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            List<Integer> sub = new ArrayList<>();
+            for(int i=0;i<size;i++){
+                
+                TreeNode node = queue.poll();
+                sub.add(node.val);
+                if(node.left!=null){
+                    queue.offer(node.left);
+                }
+                if(node.right!=null){
+                    queue.offer(node.right);
+                }
+            }
+            results.add(new ArrayList<Integer>(sub));
+        }
+        return results;
+    }
+
+122.binary tree level order traversal ii
+We could use Java features to finish this problem by using Collections.reverse();
+public List<List<Integer>> levelOrderBottom(TreeNode root) {
+        List<List<Integer>> results = new ArrayList<>();
+        if(root == null){
+            return results;
+        }
+        
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            List<Integer> sub = new ArrayList<Integer>();
+            for(int i=0;i<size;i++){
+                TreeNode node = queue.poll();
+                sub.add(node.val);
+                if(node.left!=null){
+                    queue.offer(node.left);
+                }
+                if(node.right!=null){
+                    queue.offer(node.right);
+                }
+            }
+            results.add(new ArrayList<Integer>(sub));
+        }
+        Collections.reverse(results);
+        return results;
+    }
+
+123.clone graph
+这道题需要知道的就是克隆一个图其实就是克隆一个图的点和边，边又是由点连接起来的，所以重点就是点。首先找出所有的点放进一个集合。然后对点进行克隆，然后对每一个点的邻居进行遍历克隆，最后返回一个原点的克隆就可以了。至于找到所有的点使用的就是bfs.
+public UndirectedGraphNode cloneGraph(UndirectedGraphNode node) {
+        if(node == null){
+            return node;
+        }
+        
+        ArrayList<UndirectedGraphNode> nodes = getNodes(node);
+        HashMap<UndirectedGraphNode,UndirectedGraphNode> hm = new HashMap<UndirectedGraphNode,UndirectedGraphNode>();
+        for(UndirectedGraphNode n: nodes){
+            hm.put(n, new UndirectedGraphNode(n.label));
+        }
+        for (UndirectedGraphNode n : nodes) {
+            UndirectedGraphNode newNode = hm.get(n);
+            for (UndirectedGraphNode neighbor : n.neighbors) {
+                UndirectedGraphNode newNeighbor = hm.get(neighbor);
+                newNode.neighbors.add(newNeighbor);
+            }
+        }
+        
+        return hm.get(node);
+    }
+    
+    private ArrayList<UndirectedGraphNode> getNodes(UndirectedGraphNode node){
+        Queue<UndirectedGraphNode> queue = new LinkedList<>();
+        ArrayList<UndirectedGraphNode> results = new ArrayList<>();
+        HashSet<Integer> hs = new HashSet<>();
+        results.add(node);
+        queue.offer(node);
+        hs.add(node.label);
+        while(!queue.isEmpty()){
+            UndirectedGraphNode n = queue.poll();
+            for(UndirectedGraphNode nei : n.neighbors){
+                if(hs.contains(nei.label)){
+                    continue;
+                }
+                queue.offer(nei);
+                hs.add(nei.label);
+                results.add(nei);
+            }
+        }
+        return results;
+    }
+
+124.
