@@ -219,12 +219,7 @@ bfs:
 1.topological sorting（再做一遍）
 定义一个array list来存放graph的结点，定义一个hash map来存放结点以及每个节点的入度。每次都选择入度为0的点作为起始点放进results,然后遍历他的邻居结点。在queue的操作中出现了问题，只要找到了一个neighbor就应该将这个点的入度减去一，然后判断入度为0的点放到results中去。
 
-2.course schedule（再做一遍）
-这一题第一个难点就是构造一个图，从一个二维数组构造一个图。List[]edges = new ArrayList[numCourses];其实这就是存储每个点的邻居节点。
-for(int i=0;i<numCourse;i++){
-  degrees[pre[i][0]]++;
-  edges[pre[i][1]].add(pre[i][0]);
-}就是将有前置结点的入度加一，将新出现的结点加到前置结点的邻居节点。
+
 
 
 
@@ -3364,4 +3359,131 @@ public UndirectedGraphNode cloneGraph(UndirectedGraphNode node) {
         return results;
     }
 
-124.
+124.empolyee importance
+这题的关键就是要建立一个id和subordinates的关联，也就是一个hashmap.然后使用bfs就能将和计算出来。
+public int getImportance(List<Employee> employees, int id) {
+        if(employees == null || employees.size()==0){
+            return 0;
+        }
+        HashMap<Integer,Employee> hm = new HashMap<>();
+        for(Employee e: employees){
+            hm.put(e.id,e);
+        }
+        Queue<Employee> queue = new LinkedList<Employee>();
+        int sum = 0;
+        queue.offer(hm.get(id));
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            for(int i=0;i<size;i++){
+                Employee e = queue.poll();
+                sum+=e.importance;
+                if(e.subordinates!=null){
+                  for(Integer in : e.subordinates){
+                      queue.offer(hm.get(in));
+                  }
+                }
+            }   
+        }
+        return sum;
+    }
+
+125.binary tree right side view
+就是从右边往左看，从上往下把能看到的数一次放进数组然后数出。其实就是按层遍历，然后把每一层的最右边的数放进数组，使用travel by level的方法就可以解决问题。
+public List<Integer> rightSideView(TreeNode root) {
+        List<Integer> results = new ArrayList<Integer>();
+        if(root == null){
+            return results;
+        }
+        
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        
+        while(!queue.isEmpty()){
+            int size =queue.size();
+            for(int i=0;i<size;i++){
+                TreeNode n = queue.poll();
+                if(i==size-1){
+                    results.add(n.val);
+                }        
+                if(n.left!=null){
+                    queue.offer(n.left);
+                }
+                if(n.right!=null){
+                    queue.offer(n.right);
+                }
+            }
+        }
+        return results;
+    }
+
+126.course schedule
+这是一道topological sort的题目，所以使用Bfs来解决。相比于之前的bfs的图的问题，这是一个有向图。涉及到这类问题也是首先构造一个图，但是我们关心的是一个点的degree，也就是入度，因为我们每遍历一个点，就将这个点的入度减一，如果最后没有入度为0的点了就说明遍历完了。
+public boolean canFinish(int numCourses, int[][] prerequisites) {
+        
+        List[] edges = new ArrayList[numCourses];
+        int[] degree = new int[numCourses];
+        
+        for (int i = 0;i < numCourses; i++)
+            edges[i] = new ArrayList<Integer>();
+            
+        for (int i = 0; i < prerequisites.length; i++) {
+            degree[prerequisites[i][0]] ++ ;
+            edges[prerequisites[i][1]].add(prerequisites[i][0]);
+        }
+
+        Queue queue = new LinkedList();
+        for(int i = 0; i < degree.length; i++){
+            if (degree[i] == 0) {
+                queue.add(i);
+            }
+        }
+        
+        int count = 0;
+        while(!queue.isEmpty()){
+            int course = (int)queue.poll();
+            count ++;
+            int n = edges[course].size();
+            for(int i = 0; i < n; i++){
+                int pointer = (int)edges[course].get(i);
+                degree[pointer]--;
+                if (degree[pointer] == 0) {
+                    queue.add(pointer);
+                }
+            }
+        }
+        
+        return count == numCourses;
+    }
+
+127.binary tree zigzag level order traversal
+ public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
+        List<List<Integer>> results = new ArrayList<>();
+        if(root == null){
+            return results;
+        }
+        
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            List<Integer> sub = new ArrayList<>();
+            for(int i=0;i<size;i++){
+                TreeNode node = queue.poll();
+                sub.add(node.val);
+                if(node.left!=null){
+                    queue.offer(node.left);
+                }
+                if(node.right!=null){
+                    queue.offer(node.right);
+                }
+            }
+            results.add(new ArrayList<Integer>(sub));
+        }
+        for(int i=0;i<results.size();i++){
+            if(i%2!=0){
+                Collections.reverse(results.get(i));
+            }
+        }
+        return results;
+    }
