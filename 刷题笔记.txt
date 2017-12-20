@@ -29,7 +29,7 @@ first version:从首节点出发寻找从哪一个结点开始旋转，然后将
 second version:使用双指针的思想，找到需要反转的第一个结点的前结点为tail，后一个结点为head,使用dummy.next连接需要反转的第一个结点，返回dummy.next即可。
 third version: 只需要知道两段节点序列的最后一个结点就行了。
 
-9.reorder list
+
 
 10.reverse integer
 first version:转化成字符串，然后使用字符串进行reverse。
@@ -3417,7 +3417,7 @@ public List<Integer> rightSideView(TreeNode root) {
     }
 
 126.course schedule
-这是一道topological sort的题目，所以使用Bfs来解决。相比于之前的bfs的图的问题，这是一个有向图。涉及到这类问题也是首先构造一个图，但是我们关心的是一个点的degree，也就是入度，因为我们每遍历一个点，就将这个点的入度减一，如果最后没有入度为0的点了就说明遍历完了。
+这是一道topological sort的题目，所以使用Bfs来解决。相比于之前的bfs的图的问题，这是一个有向图。涉及到这类问题也是首先构造一个图，但是我们关心的是一个点的degree，也就是入度，因为我们每遍历一个点，就将这个点的入度减一，如果最后没有入度为0的点了就说明遍历完了。和129连起来看。
 public boolean canFinish(int numCourses, int[][] prerequisites) {
         
         List[] edges = new ArrayList[numCourses];
@@ -3456,6 +3456,7 @@ public boolean canFinish(int numCourses, int[][] prerequisites) {
     }
 
 127.binary tree zigzag level order traversal
+就是从0层开始按层遍历，奇数层就从左往右，偶数层从右往左。
  public List<List<Integer>> zigzagLevelOrder(TreeNode root) {
         List<List<Integer>> results = new ArrayList<>();
         if(root == null){
@@ -3487,7 +3488,123 @@ public boolean canFinish(int numCourses, int[][] prerequisites) {
         }
         return results;
     }
-128.minimum absolute difference in BST
+
+128.surrounded region
+如果点被包围了，就将包围的点转换成’X’。关键就是怎么判断一群点是不是被包围了。如果这个群中的点与边界上的点有连接就肯定不是被包围，所以就不变，要不然就是将所有的点变成’X’.这道题十分像number of islands。所以首先想到的方法是bfs.既然是和边界的点要有联系所以就从边界开始入手。在边界中找到了’O’,就从这个开始往周围扩展，这个点就被标记为’F’,这个点所有连接的点都不可能是被包围的点，将这些点标记为T.最后只要遍历一遍这个图将还是’O’的点变成’X’.F变成O就可以了。
+class Point{
+        int x;
+        int y;
+        Point(int x,int y){
+            this.x = x;
+            this.y = y;
+        }
+    }
+    final static char FREE = 'F';
+    final static char TRAVERSED = 'T';
+    int[] deltaX = {0,0,-1,1};
+    int[] deltaY = {1,-1,0,0};
+    public void solve(char[][] board) {
+        
+        if(board==null || board.length==0 || board[0].length==0){
+            return;
+        }
+        int row = board.length;
+        int col = board[0].length;
+        for(int i=0;i<row;i++){
+            bfs(board,i,0);
+            bfs(board,i,col-1);
+        }
+        for(int i=1;i<col-1;i++){
+            bfs(board,0,i);
+            bfs(board,row-1,i);
+        }
+        
+        for(int i=0;i<row;i++){
+            for(int j=0;j<col;j++){
+                switch(board[i][j]){
+                    case 'O':
+                        board[i][j]='X';
+                        break;
+                    case 'F':
+                        board[i][j]='O';
+                }
+            }
+        }
+    }
+    private List<Point> expand(Point node,char[][]board){
+        List<Point> expension = new ArrayList<>();
+        for(int direction=0;direction<4;direction++){
+            int x = node.x+deltaX[direction];
+            int y = node.y + deltaY[direction];                                  
+            if(x>=0&&x<board.length&&y>=0&&y<board[0].length&&board[x][y]=='O'){
+                board[x][y] = TRAVERSED;
+                expension.add(new Point(x,y));
+            }
+        }
+        return expension;
+    }
+    private void bfs(char[][] board, int x, int y){
+        
+        if(board[x][y]!='O'){
+            return;
+        }
+        Queue<Point> queue = new LinkedList<>();
+        queue.offer(new Point(x,y));
+        while(!queue.isEmpty()){
+            Point cur = queue.poll();
+            board[cur.x][cur.y] = FREE;
+            
+            for(Point node: expand(cur,board)){
+                queue.offer(node);
+            }
+        }
+    }
+129.course schedule ii
+这道题相比于第一道题目就是需要我们将其中一个可能的结果输出，但是我们还是需要在判断是否能输出结果的基础上再输出最后的数组。也就是在第一题的判断的基础上加上一个数组，将每一个符合条件的数加到数组中就可以了。
+   public int[] findOrder(int numCourses, int[][] prerequisites) {
+        int[] degree = new int[numCourses];
+        List[] edges = new ArrayList[numCourses];
+        
+        for(int i=0;i<numCourses;i++){
+            edges[i] = new ArrayList<Integer>();
+        }
+        for(int i=0;i<prerequisites.length;i++){
+            degree[prerequisites[i][0]]++;
+            edges[prerequisites[i][1]].add(prerequisites[i][0]);
+        }
+        
+        int[] results = new int[numCourses];
+        int index = 0;
+        
+        int count = 0;
+        Queue queue = new LinkedList();
+        for(int i=0;i<numCourses;i++){
+            if(degree[i]==0){
+                queue.offer(i);
+                results[index++]=i;
+            }
+        }
+        while(!queue.isEmpty()){
+            int course = (int)queue.poll();
+            count++;
+            int n = edges[course].size();
+            for(int i = 0; i < n; i++){
+                int pointer = (int)edges[course].get(i);
+                degree[pointer]--;
+                if (degree[pointer] == 0) {
+                    queue.add(pointer);
+                    results[index++]=pointer;
+                }
+            }
+        }
+        if(count == numCourses){
+            return results;
+        }else return new int[0];
+        
+    }
+130. minimum height trees
+
+131.minimum absolute difference in BST
 public int getMinimumDifference(TreeNode root) {
         if(root ==null){
             return 0;
@@ -3516,3 +3633,302 @@ public int getMinimumDifference(TreeNode root) {
         }
         return diff;
     }
+
+132. remove invalid parentheses
+这道题是hard的类型，关键有几点，第一个是要能想到bfs的解法，第二个是怎么在字符串中每次去掉不同的位置，然后进行valid判断。
+ public List<String> removeInvalidParentheses(String s) {
+        
+        
+        List<String> results = new ArrayList<String>();
+        if(s == null || s.length() == 0){
+            results.add(s);
+            return results;
+        }
+        boolean found = false;
+        Set<String> visited = new HashSet<String>();
+        Queue<String> queue = new LinkedList<String>();
+        queue.offer(s);
+        visited.add(s);
+        
+        while(!queue.isEmpty()){
+            String t = queue.poll();
+            if(isValid(t)){
+                results.add(t);
+                found = true;
+            }
+            
+            if(found == true) continue;
+            
+            for(int i=0;i<t.length();i++){
+                if(t.charAt(i)!='(' && t.charAt(i)!=')') continue;
+                
+                String str = t.substring(0,i) + t.substring(i+1);
+                if(!visited.contains(str)){
+                    queue.offer(str);
+                    visited.add(str);
+                }
+            }
+        }
+        return results;
+    }
+    
+    private boolean isValid(String s){
+        int cnt = 0;
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)=='(') cnt++;
+            if(s.charAt(i)==')' && cnt-- == 0) return false;
+        }
+        return cnt == 0;
+    }
+下面是dfs也就是backtracking的方法，我们需要建立两个变量来分别统计左边括号多余的数量，右边括号多余的数量。
+
+133. baseball game
+这题不难，就是stack的应用，但是需要注意string 到 int和 int 到 string的转换问题。
+public int calPoints(String[] ops) {
+        Stack<String> stack = new Stack<>();
+        if(ops == null || ops.length == 0){
+            return 0;
+        }
+        
+        int sum = 0;
+        for(int i=0;i<ops.length;i++){
+            switch(ops[i]){
+                case "+":
+                    int first = Integer.parseInt(stack.peek());
+                    stack.pop();
+                    int second = Integer.parseInt(stack.peek());
+                    second = first + second;
+                    sum += second;
+                    stack.push(String.valueOf(first));
+                    stack.push(String.valueOf(second));
+                    break;
+                case "D":
+                    int in = Integer.parseInt(stack.peek());
+                    in = in *2;
+                    sum += in;
+                    stack.push(String.valueOf(in));
+                    break;
+                case "C":
+                    int val = Integer.parseInt(stack.pop());
+                    sum -= val;
+                    break;
+                default:
+                    stack.push(ops[i]);
+                    sum += Integer.parseInt(ops[i]);
+                    break;
+            }
+        }
+        return sum;
+    }
+
+134.letter combination of a phone number
+public List<String> letterCombinations(String digits) {
+        ArrayList<String> result = new ArrayList<String>();
+
+        if (digits == null || digits.equals("")) {
+            return result;
+        }
+
+        Map<Character, char[]> map = new HashMap<Character, char[]>();
+        map.put('0', new char[] {});
+        map.put('1', new char[] {});
+        map.put('2', new char[] { 'a', 'b', 'c' });
+        map.put('3', new char[] { 'd', 'e', 'f' });
+        map.put('4', new char[] { 'g', 'h', 'i' });
+        map.put('5', new char[] { 'j', 'k', 'l' });
+        map.put('6', new char[] { 'm', 'n', 'o' });
+        map.put('7', new char[] { 'p', 'q', 'r', 's' });
+        map.put('8', new char[] { 't', 'u', 'v'});
+        map.put('9', new char[] { 'w', 'x', 'y', 'z' });
+
+        StringBuilder sb = new StringBuilder();
+        helper(map, digits, sb, result);
+
+        return result;
+    }
+
+    private void helper(Map<Character, char[]> map, String digits, 
+        StringBuilder sb, ArrayList<String> result) {
+        if (sb.length() == digits.length()) {
+            result.add(sb.toString());
+            return;
+        }
+
+        for (char c : map.get(digits.charAt(sb.length()))) {
+            sb.append(c);
+            helper(map, digits, sb, result);
+            sb.deleteCharAt(sb.length() - 1);
+        }
+    }
+
+135. N-queens
+这是一个经典的题目，我们要解决几个问题，首先是怎么画这个棋盘。也就是什么地方是q什么地方是.,我们建立一个list来存放q的纵坐标，list的下标是这个点的横坐标。那么我们只需要对这个一维数组进行dfs就可以了。根据题意，两个点不能在一条横线上，竖线上和对角线上。
+List<List<String>> solveNQueens(int n) {
+        List<List<String>> results = new ArrayList<>();
+        if (n <= 0) {
+            return results;
+        }
+        
+        search(results, new ArrayList<Integer>(), n);
+        return results;
+    }
+    
+    /*
+     * results store all of the chessboards
+     * cols store the column indices for each row
+     */
+    private void search(List<List<String>> results,
+                        List<Integer> cols,
+                        int n) {
+        if (cols.size() == n) {
+            results.add(drawChessboard(cols));
+            return;
+        }
+        
+        for (int colIndex = 0; colIndex < n; colIndex++) {
+            if (!isValid(cols, colIndex)) {
+                continue;
+            }
+            cols.add(colIndex);
+            search(results, cols, n);
+            cols.remove(cols.size() - 1);
+        }
+    }
+    
+    private List<String> drawChessboard(List<Integer> cols) {
+        List<String> chessboard = new ArrayList<>();
+        for (int i = 0; i < cols.size(); i++) {
+            StringBuilder sb = new StringBuilder();
+            for (int j = 0; j < cols.size(); j++) {
+                sb.append(j == cols.get(i) ? 'Q' : '.');
+            }
+            chessboard.add(sb.toString());
+        }
+        return chessboard;
+    }
+    
+    private boolean isValid(List<Integer> cols, int column) {
+        int row = cols.size();
+        for (int rowIndex = 0; rowIndex < cols.size(); rowIndex++) {
+            if (cols.get(rowIndex) == column) {
+                return false;
+            }
+            if (rowIndex + cols.get(rowIndex) == row + column) {
+                return false;
+            }
+            if (rowIndex - cols.get(rowIndex) == row - column) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+136.N-Queens ii
+这道题就是将上一题的添加进results的步骤改成count++就行了。
+public static int sum;
+    public int totalNQueens(int n) {
+        sum = 0;
+        int[] usedColumns = new int[n];
+        placeQueen(usedColumns, 0);
+        return sum;
+    }
+    public void placeQueen(int[] usedColumns, int row) {
+        int n = usedColumns.length;
+        
+        if (row == n) {
+            sum ++;
+            return;
+        }
+        
+        for (int i = 0; i < n; i++) {
+            if (isValid(usedColumns, row, i)) {
+                usedColumns[row] = i;
+                placeQueen(usedColumns, row + 1);
+            }
+        }
+    }
+    public boolean isValid(int[] usedColumns, int row, int col) {
+        for (int i = 0; i < row; i++) {
+            if (usedColumns[i] == col) {
+                return false;
+            }
+            if ((row - i) == Math.abs(col-usedColumns[i])) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+137.task scheduler
+这道题一开始我是没有什么想法的，后来看了别人的解法才了解，其实这道题没什么难度，关键是要找到规律。我们需要统计出现次数最多的字符，假设是max，那么就是要分成max-1段，每一段的长度是n+1,最后是把出现次数最多的字符加上去，这里就出现一个问题，出现次数最多的字符可能会有多个，因此我们需要通过一个循环来解决。在最后输出的时候也要注意，有可能原先的数组是均匀的，也即是说光这个数组本身满足条件，他的长度就是最终的答案。
+public int leastInterval(char[] tasks, int n) {
+        int[] cnt = new int[26];
+        for(int i=0;i<tasks.length;i++){
+            cnt[tasks[i]-'A']++;
+        }
+        
+        Arrays.sort(cnt);
+        int max = cnt[25];
+        int i=25;
+        int len = tasks.length;
+        while(i>=0 && cnt[i]==max){
+            i--;
+        }
+        return Math.max(len,(max-1)*(n+1)+25-i);
+    }
+
+138.minimum window substring
+滑动窗口问题，但是第一遍没能读懂。
+public String minWindow(String s, String t) {
+        if(t.length()>s.length()){
+            return "";
+        }
+        
+        HashMap<Character,Integer> map = new HashMap<>();
+        for(int i=0;i<t.length();i++){
+            if(map.containsKey(t.charAt(i))){
+                map.put(t.charAt(i),map.get(t.charAt(i))+1);
+            }else{
+                map.put(t.charAt(i),1);
+            }
+        }
+    int left = 0;  
+    int count = 0;  
+    int minLen = s.length()+1;  
+    int minStart = 0;  
+    for(int right=0; right<s.length();right++)  
+    {  
+        if(map.containsKey(s.charAt(right)))  
+        {  
+            map.put(s.charAt(right),map.get(s.charAt(right))-1);  
+            if(map.get(s.charAt(right))>=0)  
+            {  
+                count++;  
+            }  
+            while(count == t.length())  
+            {  
+                if(right-left+1<minLen)  
+                {  
+                    minLen = right-left+1;  
+                    minStart = left;                      
+                }  
+                if(map.containsKey(s.charAt(left)))  
+                {  
+                    map.put(s.charAt(left), map.get(s.charAt(left))+1);  
+                    if(map.get(s.charAt(left))>0)  
+                    {  
+                        count--;  
+                    }  
+                }  
+                left++;  
+            }  
+        }  
+    }  
+    if(minLen>s.length())  
+    {  
+        return "";  
+    }  
+    return s.substring(minStart,minStart+minLen);  
+    }
+
+139.reorder list
