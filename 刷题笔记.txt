@@ -1,3 +1,6 @@
+HashMap:
+并不保证数据有序，linkedhashmap 保证数据可以保持插入顺序，如果希望map可以保持key的大小顺序的话就需要使用treemap.
+
 LinkedList:
 1.reverse nodes in k-group（再做一遍）
 first version:  reverse every k nodes,find the kth node then reverse them. the important thing is to how to connect them.
@@ -3932,3 +3935,84 @@ public String minWindow(String s, String t) {
     }
 
 139.reorder list
+
+140.two sum ii
+相比于sum two 来说，数组是按照升序排列的。因为题目中确定了是exactly one solution,所以就是找到即输出。
+public int[] twoSum(int[] numbers, int target) {
+        int start = 0;
+        int end = numbers.length-1;
+        int[] results = new int[2];
+        while(start+1<end){
+            if(numbers[start]+numbers[end]==target){
+                results[0] = start+1;
+                results[1] = end+1;
+                return results;
+            }else if(numbers[start]+numbers[end]>target){
+                end--;
+            }else{
+                start++;
+            }
+        }
+        if(numbers[start]+numbers[end]==target){
+            results[0] = start+1;
+            results[1] = end+1;
+        }
+        return results;
+    }
+
+141.two sum iv-input is a bst
+因为是bst，所以中序是按照升序排列的，因为有序就可以使用二分法来解决问题。
+public boolean findTarget(TreeNode root, int target) {
+        List<Integer> tree = new ArrayList<>();
+        if(root == null){
+            return false;
+        }
+        if(root.left==null && root.right==null){
+            return false;
+        }
+        helper(root,tree);
+        
+        //binary tree
+        int start = 0;
+        int end = tree.size()-1;
+        while(start+1<end){
+            if(tree.get(start)+tree.get(end)==target){
+                return true;
+            }else if(tree.get(start)+tree.get(end)>target){
+                end--;
+            }else start++;
+        }
+        if(tree.get(start)+tree.get(end)==target){
+            return true;    
+        }else return false;
+    }
+    
+    private void helper(TreeNode root,List<Integer> tree){
+        if(root == null){
+            return;
+        }
+        
+        helper(root.left,tree);
+        tree.add(root.val);
+        helper(root.right,tree);
+    }
+142.happy number
+这个就是根据题意解答，从任意一个正整数开始，将这个数的每一位平方然后求和，最后得出的数继续这个操作，直到最后等于1结束。题目中也给了结束的可能就是出现了循环，也就是说出现的数字又出现了就不是happy number,所以想到了使用hashset来解决问题。
+public boolean isHappy(int n) {
+        HashSet<Integer> hs = new HashSet<>();
+        while(n!=1){
+            int res = 0;
+            int temp = n;
+            while(temp!=0){
+                res += (temp%10)*(temp%10);
+                temp /=10;
+            }
+            n = res;
+            if(hs.contains(n)){
+                return false;
+            }else{
+                hs.add(n);
+            }
+        }
+        return true;
+    }
