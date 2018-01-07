@@ -4016,3 +4016,382 @@ public boolean isHappy(int n) {
         }
         return true;
     }
+143.binary watch
+这也是一道标准的backtracing的题目。因为这里时间的可能性已经给我们了，就是小时数加上分钟数，这两个可以使用数组来完成，在其中取数就是可以使用到backtracing了。这里要提醒自己，每次对list进行遍历的时候总是通过list.size()来完成，其实快速的方法可以通过for(int i: list).
+public List<String> readBinaryWatch(int num) {
+        List<String> results = new ArrayList<>();
+        
+        int[] num1 = new int[]{8,4,2,1};
+        int[] num2 = new int[]{32,16,8,4,2,1};
+        for(int i=0;i<=num;i++){
+            List<Integer> hour = generateDigit(num1,i);
+            List<Integer> mins = generateDigit(num2,num-i);
+            for(int h : hour){
+                if(h>=12) continue;
+                for(int m : mins){
+                    if(m>=60) continue;
+                    results.add(h + ":" + (m>=10 ? m : "0"+m));
+                }
+            }
+        }
+        return results;
+    }
+    
+    private List<Integer> generateDigit(int[] num, int i){
+        List<Integer> res = new ArrayList<>();
+        helper(res,num,0,i,0);
+        return res;
+    }
+    
+    private void helper(List<Integer> res, int[] num, int start, int count, int sum){
+        if(count == 0){
+            res.add(sum);
+            return;
+        }
+        for(int i=start;i<num.length;i++){
+            helper(res,num,i+1,count-1,sum+num[i]);
+        }
+    }
+
+144.prime numbers
+sieve of Erathosthenes.
+public int countPrimes(int n) {
+        boolean[] res = new boolean[n];
+        int count = 0;
+        for(int i=2;i<n;i++){
+            if(res[i]==false){
+                count++;
+            }
+            for(int j=2;i*j<n;j++){
+                res[i*j]=true;
+            }
+        }
+        return count;
+    }
+
+145.length of last word
+这题要考虑给的字符串是不是空，还要考虑去掉empty space之后的数组是不是空。
+public int lengthOfLastWord(String s) {
+        if(s==null || s.length()==0){
+            return 0;
+        }
+        
+        String[] res = s.split(" ");
+        if(res == null || res.length == 0){
+            return 0;
+        }
+        return res[res.length-1].length();
+    }
+146.ransom note
+知道了一个点就是contains(charsequense)。
+public boolean canConstruct(String ransomNote, String magazine) {
+        if(ransomNote.length()>magazine.length()){
+            return false;
+        }
+        HashMap<Character,Integer> hm = new HashMap<>();
+        for(char s: magazine.toCharArray()){
+            if(hm.containsKey(s)){
+                hm.put(s,hm.get(s)+1);
+            }else{
+                hm.put(s,1);
+            }
+        }
+        for(int i=0;i<ransomNote.length();i++){
+            if(hm.containsKey(ransomNote.charAt(i))){
+                hm.put(ransomNote.charAt(i),hm.get(ransomNote.charAt(i))-1);
+            }else{
+                return false;
+            }
+        }
+        for(int i=0;i<magazine.length();i++){
+            if(hm.get(magazine.charAt(i))<0){
+                return false;
+            }
+        }
+        return true;
+        
+        
+    }
+
+147.longest uncommon subsequence i
+public int findLUSlength(String a, String b) {
+        return a.equals(b)?-1:Math.max(a.length(),b.length());
+    }
+
+148. longest uncommon subsequence ii
+ public int findLUSlength(String[] strs) {
+        int res = -1, j = 0, n = strs.length;
+        for (int i = 0; i < n; ++i) {
+            for (j = 0; j < n; ++j) {
+                if (i == j) continue;
+                if (checkSubs(strs[i], strs[j])) break;
+            }
+            if (j == n) res = Math.max(res, strs[i].length());
+        }
+        return res;
+    }
+    private boolean checkSubs(String subs, String str) {
+        int i = 0;
+        for (char c : str.toCharArray()) {
+            if (c == subs.charAt(i)) ++i;
+            if (i == subs.length()) break;
+        } 
+        return i == subs.length();
+    }
+
+149.longest valid parentheses
+public int longestValidParentheses(String s) {
+        if(s==null || s.length()==0){
+            return 0;
+        }
+        int res = 0;
+        int start = 0;
+        Stack<Integer> stack = new Stack<>();
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)=='('){
+                stack.push(i);
+            }else if(s.charAt(i)==')'){
+                if(stack.isEmpty()){
+                    start = i+1;
+                }else{
+                    stack.pop();
+                    res = stack.isEmpty() ? Math.max(res,i-start+1):Math.max(res,i-stack.peek());
+                }
+            }
+        }
+        return res;
+    }
+
+150.regular expression matching
+dp method.
+public boolean isMatch(String s, String p) {
+        if(s == null || p == null){
+            return false;
+        }
+        
+        boolean [][]dp = new boolean[s.length()+1][p.length()+1];
+        dp[0][0] = true;
+        
+        for(int i=0;i<p.length();i++){
+            if(i>0 && p.charAt(i)=='*' && dp[0][i-1]){
+                dp[0][i]=true;
+            }
+        }
+        
+        for(int i=1;i<s.length();i++){
+            for(int j=1;j<p.length();j++){
+                if(s.charAt(i) == p.charAt(j)){
+                    dp[i][j] = dp[i-1][j-1];
+                }
+                if( p.charAt(j)=='.'){
+                    dp[i][j] = dp[i-1][j-1];
+                }
+                if(p.charAt(j)=='*'){
+                    if(j>1 && p.charAt(j-1)!=s.charAt(i) && p.charAt(j-1) != '.'){
+                        dp[i][j] = dp[i][j-2];
+                    }else{
+                        dp[i][j] = (dp[i-1][j] || dp[i][j-1] || dp[i][j-2]);
+                    }
+                }
+            }
+        }
+        return dp[s.length()][p.length()];
+    }
+
+recursion :
+这题使用递归的话需要考虑的情况非常多。
+// base case
+	if (p.length() == 0) {
+		return s.length() == 0;
+	}
+ 
+	// special case
+	if (p.length() == 1) {
+ 
+		// if the length of s is 0, return false
+		if (s.length() < 1) {
+			return false;
+		}
+ 
+		//if the first does not match, return false
+		else if ((p.charAt(0) != s.charAt(0)) && (p.charAt(0) != '.')) {
+			return false;
+		}
+ 
+		// otherwise, compare the rest of the string of s and p.
+		else {
+			return isMatch(s.substring(1), p.substring(1));
+		}
+	}
+ 
+	// case 1: when the second char of p is not '*'
+	if (p.charAt(1) != '*') {
+		if (s.length() < 1) {
+			return false;
+		}
+		if ((p.charAt(0) != s.charAt(0)) && (p.charAt(0) != '.')) {
+			return false;
+		} else {
+			return isMatch(s.substring(1), p.substring(1));
+		}
+	}
+ 
+	// case 2: when the second char of p is '*', complex case.
+	else {
+		//case 2.1: a char & '*' can stand for 0 element
+		if (isMatch(s, p.substring(2))) {
+			return true;
+		}
+ 
+		//case 2.2: a char & '*' can stand for 1 or more preceding element, 
+		//so try every sub string
+		int i = 0;
+		while (i<s.length() && (s.charAt(i)==p.charAt(0) || p.charAt(0)=='.')){
+			if (isMatch(s.substring(i + 1), p.substring(2))) {
+				return true;
+			}
+			i++;
+		}
+		return false;
+	}
+
+151. substring with concatenation of all words
+在做到数组的问题的时候我们需要首先考虑有没有重复元素。一般有重复元素的时候考虑使用的数据结构是hashmap，没有重复的时候是hashset.
+public List<Integer> findSubstring(String s, String[] words) {
+        ArrayList<Integer> result = new ArrayList<Integer>();
+    if(s==null||s.length()==0||words==null||words.length==0){
+        return result;
+    } 
+ 
+    //frequency of words
+    HashMap<String, Integer> map = new HashMap<String, Integer>();
+    for(String w: words){
+        if(map.containsKey(w)){
+            map.put(w, map.get(w)+1);
+        }else{
+            map.put(w, 1);
+        }
+    }
+ 
+    int len = words[0].length();
+ 
+    for(int j=0; j<len; j++){
+        HashMap<String, Integer> currentMap = new HashMap<String, Integer>();
+        int start = j;//start index of start
+        int count = 0;//count total qualified words so far
+ 
+        for(int i=j; i<=s.length()-len; i=i+len){
+            String sub = s.substring(i, i+len);
+            if(map.containsKey(sub)){
+                //set frequency in current map
+                if(currentMap.containsKey(sub)){
+                    currentMap.put(sub, currentMap.get(sub)+1);
+                }else{
+                    currentMap.put(sub, 1);
+                }
+ 
+                count++;
+ 
+                while(currentMap.get(sub)>map.get(sub)){
+                    String left = s.substring(start, start+len);
+                    currentMap.put(left, currentMap.get(left)-1);
+ 
+                    count--;
+                    start = start + len;
+                }
+ 
+ 
+                if(count==words.length){
+                    result.add(start); //add to result
+ 
+                    //shift right and reset currentMap, count & start point         
+                    String left = s.substring(start, start+len);
+                    currentMap.put(left, currentMap.get(left)-1);
+                    count--;
+                    start = start + len;
+                }
+            }else{
+                currentMap.clear();
+                start = i+len;
+                count = 0;
+            }
+        }
+    }
+ 
+    return result;
+    }
+
+152.multiply strings
+我们使用一个数组来存储最终的结果，但是在读取过程中需要自动过滤掉为0的开头，因为题目规定了所有的数都不是0开头。因为每一个数都被拆分成了每一位来存放，所以只需要将每一位放进独立的dot中，再相加就可以了，但是这里需要注意进位的问题。
+public String multiply(String num1, String num2) {
+        if (num1 == null || num2 == null) {
+            return null;
+        }
+        
+        int len1 = num1.length(), len2 = num2.length();
+        int len3 = len1 + len2;
+        int i, j, product, carry;
+
+        int[] num3 = new int[len3];
+        for (i = len1 - 1; i >= 0; i--) {
+            carry = 0;
+            for (j = len2 - 1; j >= 0; j--) {
+                product = carry + num3[i + j + 1] +
+                    Character.getNumericValue(num1.charAt(i)) *
+                    Character.getNumericValue(num2.charAt(j));
+                num3[i + j + 1] = product % 10;
+                carry = product / 10;
+            }
+            num3[i + j + 1] = carry;
+        }
+
+        StringBuilder sb = new StringBuilder();
+        i = 0;
+
+        while (i < len3 - 1 && num3[i] == 0) {
+            i++;
+        }
+
+        while (i < len3) {
+            sb.append(num3[i++]);
+        }
+
+        return sb.toString();
+    }
+
+153.sum of left leaves
+public int sumOfLeftLeaves(TreeNode root) {
+        if(root == null){
+            return 0;
+        }
+        
+        if(root.left!=null && root.left.left==null && root.left.right==null){
+            return root.left.val + sumOfLeftLeaves(root.right);
+        }
+        return sumOfLeftLeaves(root.left)+sumOfLeftLeaves(root.right);
+    }
+
+154.lowest common ancestor of a binary search tree
+因为这是一个bst，所以这是一个有序的树，所以可以利用树的性质来进行计算。我们要找的这个点肯定满足node.val大于等于小的点的值，小于等于大的点的值。
+public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if(root.val > p.val && root.val > q.val) return lowestCommonAncestor(root.left, p, q);
+        if(root.val < p.val && root.val < q.val) return lowestCommonAncestor(root.right, p, q);
+        return root;
+    }
+
+155.lowest common ancestor of a binary tree
+可以使用深搜，深度优先搜索在树中就像后序遍历。这题就像使用的是标记法，只有当左子树和右子树都不为空才是找到了目标节点。
+public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
+        if(root == null || root==p || root == q){
+            return root;
+        }
+        
+        TreeNode left = lowestCommonAncestor(root.left,p,q);
+        TreeNode right = lowestCommonAncestor(root.right,p,q);
+        
+        if(left!=null && right!=null){
+            return root;
+        }
+        
+        return left == null ? right : left;
+    }
