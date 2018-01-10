@@ -4395,3 +4395,168 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
         
         return left == null ? right : left;
     }
+
+156.validate binary search tree
+因为是but，所以存在left.val<root.val<right.val,这是题目的意思。可以根据这个要求进行解答。之所以要使用long.max_value,是为了防止当前的结点的值是int型的边界值。
+public boolean isValidBST(TreeNode root) {
+        if (root == null) {
+            return true;
+        }
+        return valid(root,Long.MAX_VALUE,Long.MIN_VALUE);
+    }
+    private boolean valid(TreeNode root, long high,long low){
+        if(root == null) return true;
+        if(root.val>=high || root.val<=low) return false;
+        return valid(root.left,root.val,low) && valid(root.right,high,root.val);
+    }
+
+157.unique binary search trees
+这道题使用动态规划来解答。对于一个根来说，唯一二叉树的数量是左子树的数量乘以右子树的数量。规定res数组来表示i个结点有多少个valid search trees, 状态转移方程就是f(n) = f(0)*f(n-1) + f(1)*f(n-2)….f(n-1)*f(0).就是左子树的数量乘以右子树的数量。
+public int numTrees(int n) {
+        int[] res =  new int[n+1];
+        res[0]=1;
+        for(int i=1;i<=n;i++){
+            for(int j=0;j<i;j++){
+                res[i] += res[j] * res[i-j-1];
+            }
+        }
+        return res[n];
+    }
+
+158.unique binary search trees ii
+这道题可以使用dfs的方法来解答，也可以继续使用dp。
+public ArrayList<TreeNode> generateTrees(int n) {
+        if(n==0){
+            return new ArrayList<>();
+        }
+        return generate(1,n);
+    }
+    
+    private ArrayList<TreeNode> generate(int start, int end){
+        ArrayList<TreeNode> res = new ArrayList<TreeNode>();
+        if(start>end){
+            res.add(null);
+            return res;
+        }
+        
+        for(int i=start;i<=end;i++){
+            ArrayList<TreeNode> left = generate(start,i-1);
+            ArrayList<TreeNode> right = generate(i+1,end);
+            for(TreeNode l:left){
+                for(TreeNode r:right){
+                    TreeNode cur = new TreeNode(i);
+                    cur.left = l;
+                    cur.right = r;
+                    res.add(cur);
+                }
+            }
+        }
+        return res;
+    }
+
+159.recover binary search tree
+TreeNode first = null;
+    TreeNode second = null;
+    TreeNode pre = null;
+    public void recoverTree(TreeNode root) {
+        if(root == null) return;
+        helper(root);
+        int temp = second.val;
+        second.val = first.val;
+        first.val = temp;
+    }
+    
+    private void helper(TreeNode node){
+        if(node == null) return;
+        helper(node.left);
+        if(pre != null && pre.val >= node.val){
+            if(first==null) first = pre;
+            second = node;
+        }
+        pre = node;
+        helper(node.right);
+    }
+
+160.wildcard matching
+match在其中是什么作用
+*可以表示多个字符，这个容易验证，但是其表示的是空，要进行验证。
+public boolean isMatch(String s, String p) {
+        int sp = 0;
+        int pp = 0;
+        int match = 0;
+        int star = -1;
+        while(sp<s.length()){
+            if(pp<p.length() &&(s.charAt(sp)==p.charAt(pp) || p.charAt(pp)=='?')){
+                sp++;
+                pp++;
+            }else if(pp<p.length()&&p.charAt(pp)=='*'){
+                star = pp;
+                match = sp;
+                pp++;
+            }else if(star != -1){
+                pp = star+1;
+                match++;
+                sp = match;
+            }else return false;
+        }
+        
+        while(pp<p.length() && p.charAt(pp)=='*'){
+            pp++;
+        }
+        return pp==p.length();
+    }
+验证下来发现其实match就是为了防止*表示0个字符设置的，因为如果直接通过sp来判断的话，无法对*表示0进行操作。
+161.minimum path sum
+public int minPathSum(int[][] grid) {
+        if (grid == null || grid.length == 0 || grid[0].length == 0) {
+            return 0;
+        }
+
+        int M = grid.length;
+        int N = grid[0].length;
+        int[][] sum = new int[M][N];
+
+        sum[0][0] = grid[0][0];
+
+        for (int i = 1; i < M; i++) {
+            sum[i][0] = sum[i - 1][0] + grid[i][0];
+        }
+
+        for (int i = 1; i < N; i++) {
+            sum[0][i] = sum[0][i - 1] + grid[0][i];
+        }
+
+        for (int i = 1; i < M; i++) {
+            for (int j = 1; j < N; j++) {
+                sum[i][j] = Math.min(sum[i - 1][j], sum[i][j - 1]) + grid[i][j];
+            }
+        }
+
+        return sum[M - 1][N - 1];
+    }
+162.dungeon game
+public int calculateMinimumHP(int[][] dungeon) {
+        if(dungeon == null || dungeon.length == 0 || dungeon[0].length==0) return 1;
+        int m = dungeon.length;
+        int n = dungeon[0].length;
+        int[][] health = new int[m][n];
+        health[m - 1][n - 1] = Math.max(1 - dungeon[m - 1][n - 1], 1);
+        // 逆推最后一列的血量
+        for(int i = m - 2; i >= 0; i--){
+            health[i][n - 1] = Math.max(health[i + 1][n - 1] - dungeon[i][n - 1], 1);
+        }
+        // 逆推最后一行的血量
+        for(int j = n - 2; j >= 0; j--){
+            health[m - 1][j] = Math.max(health[m - 1][j + 1] - dungeon[m - 1][j], 1);
+        }
+        // 对于每个节点，从其下方和右方逆推回来
+        for(int i = m - 2; i >= 0; i--){
+            for(int j = n - 2; j >= 0; j--){
+                int down = Math.max(health[i + 1][j] - dungeon[i][j], 1);
+                int right = Math.max(health[i][j + 1] - dungeon[i][j], 1);
+                health[i][j] = Math.min(down, right);
+            }
+        }
+        return health[0][0];
+        
+    }
