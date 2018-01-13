@@ -4560,3 +4560,36 @@ public int calculateMinimumHP(int[][] dungeon) {
         return health[0][0];
         
     }
+163.bulb switcher
+只要计算n各数字中有多少的完全平方数就可以了。也就是说当一遍扫描完了之后，再一次扫描的时候状态就还原了，所以我们需要寻找小于等于N的完全平方数的个数。
+return (int)Math.sqrt(n);
+
+164.pow(x,n)
+最先想到直接用O(n)的直接暴力的方法求解，TEL。所以就想到折半的方法，但是需要考虑到n是不是为0，n是正是负，是奇是偶。
+public double myPow(double x, int n) {
+        //return Math.pow(x,n);
+        if(n>0) return res(x,n);
+        else return 1/res(x,-n);
+    }
+    private double res(double x,int n){
+        if(n == 0) return 1.0;
+        double half = res(x,n/2);
+        
+        if(n %2==0) return half*half;
+        else return half*half*x;
+    }
+
+164.integer break
+public int integerBreak(int n) {
+        int res = 1;
+        if(n==3 || n==2){
+            return n-1;
+        }
+        while(n>4){
+            res *= 3;
+            n -= 3;
+        }
+        return res * n;
+    }
+
+165.
