@@ -4535,6 +4535,7 @@ public int minPathSum(int[][] grid) {
         return sum[M - 1][N - 1];
     }
 162.dungeon game
+整道题有一个大的前提就是valiant knight cannot die, so the minimum number must be 1.
 public int calculateMinimumHP(int[][] dungeon) {
         if(dungeon == null || dungeon.length == 0 || dungeon[0].length==0) return 1;
         int m = dungeon.length;
@@ -4560,26 +4561,30 @@ public int calculateMinimumHP(int[][] dungeon) {
         return health[0][0];
         
     }
-163.bulb switcher
-只要计算n各数字中有多少的完全平方数就可以了。也就是说当一遍扫描完了之后，再一次扫描的时候状态就还原了，所以我们需要寻找小于等于N的完全平方数的个数。
-return (int)Math.sqrt(n);
 
-164.pow(x,n)
-最先想到直接用O(n)的直接暴力的方法求解，TEL。所以就想到折半的方法，但是需要考虑到n是不是为0，n是正是负，是奇是偶。
-public double myPow(double x, int n) {
-        //return Math.pow(x,n);
-        if(n>0) return res(x,n);
-        else return 1/res(x,-n);
-    }
-    private double res(double x,int n){
-        if(n == 0) return 1.0;
-        double half = res(x,n/2);
+163.edit distance
+ public int minDistance(String word1, String word2) {
+        if(word1.equals(word2)){
+            return 0;
+        }
         
-        if(n %2==0) return half*half;
-        else return half*half*x;
+        int n1 = word1.length(), n2 = word2.length();
+        int [][] dp = new int[n1 + 1][n2 + 1];
+        for (int i = 0; i <= n1; ++i) dp[i][0] = i;
+        for (int i = 0; i <= n2; ++i) dp[0][i] = i;
+        for (int i = 1; i <= n1; ++i) {
+            for (int j = 1; j <= n2; ++j) {
+                if (word1.charAt(i-1) == word2.charAt(j - 1)) {
+                    dp[i][j] = dp[i - 1][j - 1];
+                } else {
+                    dp[i][j] = Math.min(dp[i - 1][j - 1], Math.min(dp[i - 1][j], dp[i][j - 1])) + 1;
+                }
+            }
+        }
+        return dp[n1][n2];
     }
 
-164.integer break
+164. integer break
 public int integerBreak(int n) {
         int res = 1;
         if(n==3 || n==2){
@@ -4592,4 +4597,109 @@ public int integerBreak(int n) {
         return res * n;
     }
 
-165.
+165.burst ballons
+这道题用dp来解答。我们使用dp[i][j]来表示i-j中金币最大数。因为题目说明了两个边界值就是nums[-1]=nums[n]=1,所以我们重新建立一个新数组，便于操作。这道题的状态转移方程比较难想到。最直观的解答需要三个嵌套循环，但是边界条件特别容易出错，所以我们使用dfs+memo来解答，时间复杂度和空间复杂度并没有变化。
+public int maxCoins(int[] nums) {
+        if(nums==null || nums.length==0){
+            return 0;
+        }
+        
+        int n = nums.length;
+        int [] arr = new int[n+2];
+        for(int i=0;i<n;i++){
+            arr[i+1] = nums[i];
+        }
+        arr[0] = arr[n+1] = 1;
+        int[][] dp = new int[n+2][n+2];
+        return helper(1,n,arr,dp);
+    }
+    
+    private int helper(int start, int end, int[] arr, int[][] dp){
+        if(start>end) return 0;
+        if(dp[start][end]>0) return dp[start][end];
+        
+        for(int i=start;i<=end;i++){
+            dp[start][end] = Math.max(dp[start][end],arr[start-1]*arr[i]*arr[end+1]+
+                                     helper(start,i-1,arr,dp)+helper(i+1,end,arr,dp));
+        }
+        
+        return dp[start][end];
+    }
+
+166.reverse linked list ii
+这道题就是i的变形，一里面是将整个链表进行reverse,这里是将范围内的结点进行reverse，这个方法记得就可以了。
+ public ListNode reverseBetween(ListNode head, int m, int n) {
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        
+        ListNode pre = dummy;
+        ListNode cur = dummy.next;
+        for(int i=1;i<m;i++){
+            cur = cur.next;
+            pre = pre.next;
+        }
+        
+        for(int i=0;i<n-m;i++){
+            ListNode temp = cur.next;
+            cur.next = temp.next;
+            temp.next = pre.next;
+            pre.next = temp;
+        }
+        return dummy.next;
+    }
+
+167.super ugly number
+public int nthSuperUglyNumber(int n, int[] primes) {
+        int[] times = new int[primes.length];
+        int[] uglys = new int[n];
+        uglys[0] = 1;
+
+        for (int i = 1; i < n; i++) {
+            int min = Integer.MAX_VALUE;
+            for (int j = 0; j < primes.length; j++) {
+                min = Math.min(min, primes[j] * uglys[times[j]]);
+            }
+            uglys[i] = min;
+
+            for (int j = 0; j < times.length; j++) {
+                if (uglys[times[j]] * primes[j] == min) {
+                    times[j]++;
+                }
+            }
+        }
+        return uglys[n - 1];
+    }
+168. ugly number
+质数因子只有2，3，5就是ugly number.
+public boolean isUgly(int num) {
+        if (num <= 0) return false;
+        while (num % 2 == 0) num /= 2;
+        while (num % 3 == 0) num /= 3;
+        while (num % 5 == 0) num /= 5;
+        return num == 1;
+    }
+
+169.ugly number ii
+public int nthUglyNumber(int n) {
+        List<Integer> uglys = new ArrayList<Integer>();
+        uglys.add(1);
+        
+        int p2 = 0, p3 = 0, p5 = 0;
+        // p2, p3 & p5 share the same queue: uglys
+
+        for (int i = 1; i < n; i++) {
+            int lastNumber = uglys.get(i - 1);
+            while (uglys.get(p2) * 2 <= lastNumber) p2++;
+            while (uglys.get(p3) * 3 <= lastNumber) p3++;
+            while (uglys.get(p5) * 5 <= lastNumber) p5++;
+            
+            uglys.add(Math.min(
+                Math.min(uglys.get(p2) * 2, uglys.get(p3) * 3),
+                uglys.get(p5) * 5
+            ));
+        }
+
+        return uglys.get(n - 1);
+    }
+
+170.additive number
