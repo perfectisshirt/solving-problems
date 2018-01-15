@@ -4747,4 +4747,22 @@ public int guessNumber(int n) {
     }
 172. guess number higher or lower ii
 
-173.
+173.first missing positive
+如果输入的是[98,99,100]最后返回的值是1.如果申请的是四个空，那么就是1，2，3，4这四个数。题目运用类似桶排序的思想来解决。
+public int firstMissingPositive(int[] nums) {
+        if(nums == null || nums.length==0){
+            return 1;
+        }
+        for(int i=0;i<nums.length;i++){
+            while(nums[i]>0 && nums[i]<=nums.length && nums[nums[i]-1]!=nums[i]){
+                int temp = nums[nums[i]-1];
+                nums[nums[i]-1] = nums[i];
+                nums[i] = temp;
+            }
+        }
+        
+        for(int i=0;i<nums.length;i++){
+            if(nums[i]!=(i+1)) return i+1;
+        }
+        return nums.length+1;
+    }
