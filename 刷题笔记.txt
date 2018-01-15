@@ -4746,7 +4746,20 @@ public int guessNumber(int n) {
         else return end;
     }
 172. guess number higher or lower ii
-
+需要知道的是这道题求的是最坏情况下的最小值，我们假定我们取的数是x，1<=x<=n && x!=y,y即使最终的答案，那么我们在取得这个数的时候就知道我们应该继续在(1,x-1)还是(x+1,n)中继续进行计算了，那么最终的答案就是Math.min(Math.max(helper(1,x-1),helper(x+1,n))+x).但是涉及到了三次循环，所以为了不出错我们使用dfs+memo。
+public int getMoneyAmount(int n) {
+        int[][] dp = new int[n+1][n+1];
+        return solve(dp, 1, n);
+    }
+    int solve(int[][] dp, int L, int R) {
+		if (L >= R) return 0;
+		if (dp[L][R] != 0) return dp[L][R];
+		dp[L][R] = 0x7FFFFFFF;
+		for (int i = L; i <= R; i++) {
+			dp[L][R] = Math.min(dp[L][R], i + Math.max(solve(dp,L,i-1),solve(dp,i+1,R)));
+		}
+		return dp[L][R];
+	}
 173.first missing positive
 如果输入的是[98,99,100]最后返回的值是1.如果申请的是四个空，那么就是1，2，3，4这四个数。题目运用类似桶排序的思想来解决。
 public int firstMissingPositive(int[] nums) {
@@ -4766,3 +4779,245 @@ public int firstMissingPositive(int[] nums) {
         }
         return nums.length+1;
     }
+
+174.bitwise and of numbers range
+分析后我们发现，如果m!=n，说明最后一位and肯定是0，因为m and n must be  a even and an odd。我们其实就是从低位往高位找第一个都是1的位，那么就逐位对低位消除也就是右移就可以了。
+public int rangeBitwiseAnd(int m, int n) {
+        int offset = 0;
+        while(m!=n){
+            m>>=1;
+            n>>=1;
+            offset++;
+        }
+        return m<<offset;
+    }
+
+175.remove linked list elements
+题目不难，但是还是老问题，遇到数组或者链表的问题的时候一定要问自己，有没有duplicate。当然还有链表处理的时候经常会出错的就是空指针问题，一定要在进行point.next的时候对其进行空指针的判断。
+public ListNode removeElements(ListNode head, int val) {
+        if(head==null){
+            return head;
+        }
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        ListNode point = dummy;
+        while(point !=null && point.next!=null){
+            while(point.next!=null && point.next.val == val){
+                point.next = point.next.next;
+            }
+            point = point.next;
+        }
+        return dummy.next;
+    }
+
+176.isomorphic strings
+判断两个string是不是有相同的结构。因为涉及到两个字符串的比较我想到了hashmap,但是我已开始想到的是存储字符以及出现的次数，但是我发现后来并不能直接比较。后来我发现关键的是一个字母对应一个字母，那么问题就变成了hashmap<character,character>。有一个需要注意的问题就是这并不是一个完全的pattern去匹配source的问题，这里比较的时候除了要注意hm.containsKey之外还要注意hm.containsValue，比如ab和aa，应该返回false.
+public boolean isIsomorphic(String s, String t) {
+        if(s==null || t==null){
+            return false;
+        }
+        HashMap<Character,Character> hm = new HashMap<>();
+        int i=0;
+        
+        while(i<=s.length()-1){
+            if(!hm.containsKey(s.charAt(i))){
+                if(!hm.containsValue(t.charAt(i))){
+                    hm.put(s.charAt(i),t.charAt(i));
+                    i++;
+                }else return false;
+            }else{
+                if(hm.get(s.charAt(i))!=t.charAt(i)) return false;
+                i++;
+                
+            }
+        }
+        
+        return true;
+    }
+
+177.implement trie(prefix tree)
+弄懂178就可以了，可以把178当做是trietree题目的模板。
+class Trie {
+
+    class TrieNode{
+        TrieNode[] children;
+        boolean isWord;
+        public TrieNode(){
+            children = new TrieNode[26];
+            isWord = false;
+        }
+    }
+    
+    private TrieNode root;
+    /** Initialize your data structure here. */
+    public Trie() {
+        root = new TrieNode();
+    }
+    
+    /** Inserts a word into the trie. */
+    public void insert(String word) {
+        TrieNode node = root;
+        for(int i=0;i<word.length();i++){
+            int j = word.charAt(i) - 'a';
+            if(node.children[j]==null){
+                node.children[j] = new TrieNode();
+            }
+            node = node.children[j];
+        }
+        node.isWord = true;
+    }
+    
+    /** Returns if the word is in the trie. */
+    public boolean search(String word) {
+        TrieNode node = root;
+        for(int i=0;i<word.length();i++){
+            int j = word.charAt(i)-'a';
+            if(node.children[j]==null){
+                return false;
+            }
+            node = node.children[j];
+        }
+        return node.isWord;
+    }
+    
+    
+    
+    
+    /** Returns if there is any word in the trie that starts with the given prefix. */
+    public boolean startsWith(String prefix) {
+        TrieNode node = root;
+        for(int i=0;i<prefix.length();i++){
+            int j = prefix.charAt(i)-'a';
+            if(node.children[j]==null) return false;
+            node = node.children[j];
+        }
+        return true;
+    }
+}
+
+/**
+ * Your Trie object will be instantiated and called as such:
+ * Trie obj = new Trie();
+ * obj.insert(word);
+ * boolean param_2 = obj.search(word);
+ * boolean param_3 = obj.startsWith(prefix);
+ */
+
+178.add and search word- data structure design
+这是一个设计题，设计trie tree的add and search functions.
+class WordDictionary {
+
+    class TrieNode{
+        TrieNode[]  children;
+        boolean isWord;
+        public TrieNode(){
+            children = new TrieNode[26];
+            isWord = false;
+        }
+    }
+    
+    private TrieNode root;
+    /** Initialize your data structure here. */
+    public WordDictionary() {
+        root = new TrieNode();
+    }
+    
+    /** Adds a word into the data structure. */
+    public void addWord(String word) {
+        TrieNode node = root;
+        for(int i=0;i<word.length();i++){
+            int j = word.charAt(i) - 'a';
+            if(node.children[j]==null){
+                node.children[j] = new TrieNode();
+            }
+            node = node.children[j];
+        }
+        node.isWord = true;
+    }
+    
+    /** Returns if the word is in the data structure. A word could contain the dot character '.' to represent any one letter. */
+    public boolean search(String word) {
+        return find(word,root,0);
+    }
+    
+    private boolean find(String word, TrieNode root, int index){
+        if(index == word.length()){
+            return root.isWord;
+        }
+        
+        if(word.charAt(index) == '.'){
+            for(TrieNode temp:root.children){
+                if(temp!=null && find(word,temp,index+1)){
+                    return true;
+                }
+            }
+            return false;
+        }else{
+            int j = word.charAt(index)-'a';
+            TrieNode temp = root.children[j];
+            return temp!=null && find(word,temp,index+1);
+        }
+    }
+}
+
+/**
+ * Your WordDictionary object will be instantiated and called as such:
+ * WordDictionary obj = new WordDictionary();
+ * obj.addWord(word);
+ * boolean param_2 = obj.search(word);
+ */
+
+179. minimum size subarray sum
+这道题是找连续的子集，看到连续这个字眼，同时结合子集我们第一个想到的方法就是sliding window.
+
+180. word search ii
+
+181. house robber ii
+
+182. shortest palindrome
+
+183.combination sum iii
+
+184. contains duplicate
+考虑是否有数字重复出现的问题第一个反应就是hashset，如果space要求是O(1)的话，可以使用arrays.sort()。
+public boolean containsDuplicate(int[] nums) {
+        HashSet<Integer> hs = new HashSet<>();
+        for(int i=0;i<nums.length;i++){
+            if(hs.contains(nums[i])){
+                return true;
+            }else{
+                hs.add(nums[i]);
+            }
+        }
+        return false;
+    }
+
+排序判断的方法：
+Arrays.sort(nums);
+        for(int i=1;i<nums.length;i++){
+            if(nums[i-1]==nums[i]){
+                return true;
+            }
+            
+        }
+        return false;
+
+185.the skyline problem
+
+186.contains duplicate ii
+
+187.contains duplicate iii
+
+188. maximal square 
+189.count complete tree nodes
+190.rectangle area
+191.basic calculator
+192.implement stack using queues
+193.invert binary tree
+194.basic calculator ii
+195.summary ranges
+196. majority elements ii
+197.kth smallest element in a bst
+198.implement queue using stacks
+199.number of digit one
+200.palindrome linked list
