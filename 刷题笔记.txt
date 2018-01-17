@@ -4988,12 +4988,126 @@ public int minSubArrayLen(int s, int[] nums) {
 
 180. word search ii
 这道题相比于201来说多了一个构建trie tree的过程。
+ class TrieNode {
+        String s;
+         boolean isString;
+         HashMap<Character, TrieNode> subtree;
+         public TrieNode() {
+            // TODO Auto-generated constructor stub
+             isString = false;
+             subtree = new HashMap<Character, TrieNode>();
+             s = "";
+         }
+    };
 
+
+    class TrieTree{
+        TrieNode root ;
+        public TrieTree(TrieNode TrieNode) {
+            root = TrieNode;
+        }
+        public void insert(String s) {
+            TrieNode now = root;
+            for (int i = 0; i < s.length(); i++) {
+                if (!now.subtree.containsKey(s.charAt(i))) {
+                    now.subtree.put(s.charAt(i), new TrieNode());
+                }
+                now  =  now.subtree.get(s.charAt(i));
+            }
+            now.s = s;
+            now.isString  = true;
+        }
+        public boolean find(String s){
+            TrieNode now = root;
+            for (int i = 0; i < s.length(); i++) {
+                if (!now.subtree.containsKey(s.charAt(i))) {
+                    return false;
+                }
+                now  =  now.subtree.get(s.charAt(i));
+            }
+            return now.isString ;
+        }
+    };
+
+    public int []dx = {1, 0, -1, 0};
+    public int []dy = {0, 1, 0, -1};
+    
+    public void search(char[][] board, int x, int y, TrieNode root, List<String> ans) {    
+        if(root.isString == true)
+        {
+            if(!ans.contains(root.s)){
+                ans.add(root.s);
+            }
+        }
+        if(x < 0 || x >= board.length || y < 0 || y >= board[0].length || board[x][y]==0 || root == null)
+            return ;
+        if(root.subtree.containsKey(board[x][y])){
+            for(int i = 0; i < 4; i++){
+                char now = board[x][y];
+                board[x][y] = 0;
+                search(board, x+dx[i], y+dy[i], root.subtree.get(now), ans);
+                board[x][y] = now;
+            }
+        }
+        
+    }
+    
+    public List<String> findWords(char[][] board, String[] words) {
+        List<String> ans = new ArrayList<String>();
+        
+        TrieTree tree = new TrieTree(new TrieNode());
+        for(String word : words){
+            tree.insert(word);
+        }
+        for(int i = 0; i < board.length; i++){
+            for(int j = 0; j < board[i].length; j++){
+                search(board, i, j, tree.root, ans);
+            }
+        }
+        return ans;
+        // write your code here
+        
+    }
 181. house robber ii
+ public int rob(int[] nums) {
+        if(nums.length == 1)
+            return nums[0];
+        return Math.max(rob(nums,0,nums.length-2),rob(nums,1,nums.length-1));
+    }
+    
+    private int rob(int[] nums, int lo, int hi){
+        int prevNo = 0;
+        int prevYes = 0;
+        for(int i=lo;i<=hi;i++){
+            int temp = prevNo;
+            prevNo = Math.max(prevNo,prevYes);
+            prevYes = nums[i]+temp;
+        }
+        return Math.max(prevNo,prevYes);
+    }
 
 182. shortest palindrome
+这种做法是寻找前后缀，还有一种做法是KMP.
+public String shortestPalindrome(String s) {
+        int i=0, j=s.length()-1;
+        int end = s.length()-1;
+        char[] ch = s.toCharArray();
+        while(i<j){
+            if(ch[i]==ch[j]){
+                i++;
+                j--;
+            }else{
+                i=0;
+                end--;
+                j = end;
+            }
+        }
+        return new StringBuilder(s.substring(end+1)).reverse().toString()+s;
+        
+    }
 
 183.combination sum iii
+
 
 184. contains duplicate
 考虑是否有数字重复出现的问题第一个反应就是hashset，如果space要求是O(1)的话，可以使用arrays.sort()。
@@ -5048,6 +5162,25 @@ public boolean containsNearbyDuplicate(int[] nums, int k) {
 192.implement stack using queues
 
 193.invert binary tree
+这道题就是将同层的左右节点互换，可以使用bfs也可以使用dfs，但是本着能用bfs就不用dfs的原则，我写了bfs的解法。
+if(root == null) return root;
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            for(int i=0;i<size;i++){
+                TreeNode cur = queue.poll();
+                TreeNode temp = cur.left;
+                cur.left = cur.right;
+                cur.right = temp;
+                if(cur.left!=null) queue.offer(cur.left);
+                if(cur.right!=null) queue.offer(cur.right);
+            }
+            
+        }
+        
+        return root;
+
 194.basic calculator ii
 195.summary ranges
 196. majority elements ii
