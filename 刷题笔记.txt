@@ -4968,9 +4968,26 @@ class WordDictionary {
  */
 
 179. minimum size subarray sum
-这道题是找连续的子集，看到连续这个字眼，同时结合子集我们第一个想到的方法就是sliding window.
+这道题是找连续的子集，看到连续这个字眼，同时结合子集我们第一个想到的方法就是sliding window.我们规定一个left从0开始，然后遍历的变量从0开始，当满足sum>=target的时候就执行移动left的操作，也就是说要去的合法的长度就是i-left+1.
+public int minSubArrayLen(int s, int[] nums) {
+        if(nums==null || nums.length==0){
+            return 0;
+        }
+        int left = 0;
+        int sum = 0;
+        int res = Integer.MAX_VALUE;
+        for(int i=0;i<nums.length;i++){
+            sum += nums[i];
+            while(i>=left && sum >=s){
+                res = Math.min(res,i-left+1);
+                sum -= nums[left++];
+            }
+        }
+        return res == Integer.MAX_VALUE ? 0 : res;
+    }
 
 180. word search ii
+这道题相比于201来说多了一个构建trie tree的过程。
 
 181. house robber ii
 
@@ -5005,7 +5022,23 @@ Arrays.sort(nums);
 185.the skyline problem
 
 186.contains duplicate ii
-
+这里多了一个condition就是两个下标之间的diff abs<=k.在数组中遇到两个数的比较的问题一定要想到用hashmap来解答。
+public boolean containsNearbyDuplicate(int[] nums, int k) {
+        if(nums==null || nums.length==0){
+            return false;
+        }
+        HashMap<Integer,Integer> hm = new HashMap<>();
+        for(int i=0;i<nums.length;i++){
+            if(hm.containsKey(nums[i])){
+                if(hm.get(nums[i])!=i&&Math.abs(hm.get(nums[i])-i)<=k){
+                    return true;
+                }
+            }
+               hm.put(nums[i],i);
+        }
+        
+        return false;
+    }
 187.contains duplicate iii
 
 188. maximal square 
@@ -5013,6 +5046,7 @@ Arrays.sort(nums);
 190.rectangle area
 191.basic calculator
 192.implement stack using queues
+
 193.invert binary tree
 194.basic calculator ii
 195.summary ranges
@@ -5021,3 +5055,35 @@ Arrays.sort(nums);
 198.implement queue using stacks
 199.number of digit one
 200.palindrome linked list
+
+201.word search
+这是一道典型的dfs的题目，使用backtracking的方法可以求解。
+public boolean exist(char[][] board, String word) {
+        if(board==null || board.length==0 || board[0].length==0){
+            return false;
+        }
+        for(int i=0;i<board.length;i++){
+            for(int j=0;j<board[0].length;j++){
+                if(dfs(board,word,i,j,0)) return true;
+            }
+        }
+        return false;
+    }
+    
+    private boolean dfs(char[][]board,String word, int i,int j,int start){
+        if(start == word.length()){
+            return true;
+        }
+        if(i<0 || i>=board.length || j<0 || j>=board[0].length){
+            return false;
+        }
+        if(board[i][j] == word.charAt(start++)){
+            char c = board[i][j];
+            board[i][j] = '#';
+            boolean res =  dfs(board,word,i+1,j,start) || dfs(board,word,i,j+1,start) || dfs(board,word,i-1,j,start) ||  dfs(board,word,i,j-1,start);
+             board[i][j] = c;
+             return res;
+        }
+       
+        return false;
+    }
