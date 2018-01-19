@@ -2403,10 +2403,6 @@ public int majorityElement(int[] nums) {
         int mid = start+(end-start)/2;
         return nums[mid];
     }
-91.majority element ii
-思路一：使用hashmap，将arraylist中的数和这个数出现的次数存放在hashmap中，然后比较他们的次数取最大值。只要题目中确定有且只有一个这样的值，这个方法都适用。majority number iii就是一个例子。
-
-92.majority element iii
 
 93.lonely pixel i
 建立两个数组分别计算行和列中的b的数量，第一遍扫描就是统计数量，第二遍扫描的时候进行判断，如果发现了picture[i][j]==‘B’，判断这一行这一列是不是等于1，是就意味着一个满足的点。
@@ -5107,7 +5103,25 @@ public String shortestPalindrome(String s) {
     }
 
 183.combination sum iii
-
+规定数的个数，这几个数的和为target。
+public List<List<Integer>> combinationSum3(int k, int n) {
+        List<List<Integer>> res = new ArrayList<>();
+        List<Integer> level = new ArrayList<>();
+        dfs(res,level,1,k,n);
+        return res;
+    }
+    
+    private void dfs(List<List<Integer>> res, List<Integer> level, int index, int k, int target){
+        if(target == 0 && k==0){
+            res.add(new ArrayList<Integer>(level));
+            return;
+        }
+        for(int i=index;i<=9;i++){
+            level.add(i);
+            dfs(res,level,i+1,k-1,target-i);
+            level.remove(level.size()-1);
+        }
+    }
 
 184. contains duplicate
 考虑是否有数字重复出现的问题第一个反应就是hashset，如果space要求是O(1)的话，可以使用arrays.sort()。
@@ -5134,6 +5148,35 @@ Arrays.sort(nums);
         return false;
 
 185.the skyline problem
+这是一道很难的题目，我们使用sweep line扫描线的算法来计算。找出所有的点，起始点是当前图形的最高点，结束点是当前图形的第二高点。
+Collections.sort(height,(a,b)->(a[0]==b[0])?a[1]-b[1]:a[0]-b[0]);就是说先按照x的坐标排序，按照升序，如果两个相同，则按照高度排序。priority queue <>(a,b)->(a-b)按照升序排列，那么peek(）出来的是最小的那个数。
+public List<int[]> getSkyline(int[][] buildings) {
+        List<int[]> res = new ArrayList<>();
+        List<int[]> heights = new ArrayList<>();
+        for(int[] b: buildings){
+            heights.add(new int[]{b[0],-b[2]});
+            heights.add(new int[]{b[1],b[2]});
+        }
+        Collections.sort(heights,(a,b)->(a[0]==b[0]) ? a[1]-b[1] : a[0]-b[0]);
+        PriorityQueue<Integer> pq = new PriorityQueue<>((a,b)->(b-a));
+        pq.offer(0);
+        int prev = 0;
+        for(int []h:heights){
+            if(h[1] < 0){
+                pq.offer(-h[1]);
+            }else{
+                pq.remove(h[1]);
+            }
+            int cur = pq.peek();
+            if(cur != prev){
+               res.add(new int[]{h[0],cur});
+               prev = cur;
+            }
+        }
+        
+        
+        return res;
+    }
 
 186.contains duplicate ii
 这里多了一个condition就是两个下标之间的diff abs<=k.在数组中遇到两个数的比较的问题一定要想到用hashmap来解答。
@@ -5154,12 +5197,150 @@ public boolean containsNearbyDuplicate(int[] nums, int k) {
         return false;
     }
 187.contains duplicate iii
+使用tree set或者 bucket都能解决。
+public boolean containsNearbyAlmostDuplicate(int[] nums, int k, int t) {
+        TreeSet<Long> set = new TreeSet<>();
+        for(int i=0;i<nums.length;i++){
+            Long floor = set.floor((long)nums[i]+t);
+            Long ceil = set.ceiling((long)nums[i]-t);
+            
+            if((floor!=null && floor >= nums[i])||(
+            ceil!=null && ceil<=nums[i])){
+                return true;
+            }
+            
+            set.add((long)nums[i]);
+            if(i>=k){
+                set.remove((long)nums[i-k]);
+            }
+        }
+        return false;
+    }
 
 188. maximal square 
+dp[i][j]表示到达(i, j)位置所能组成的最大正方形的边长.如果说以(i,j)为一个正方形的右下角的点，那么他的上方，左上方和左边的点分别是一个正方形的右下角的点，这里的res表示的是到(i,j)构成的最大正方形的边长。
+public int maximalSquare(char[][] matrix) {
+        if(matrix==null || matrix.length==0 || matrix[0].length==0){
+            return 0;
+        }
+        int m = matrix.length;
+        int n = matrix[0].length;
+        int res = 0;
+        int[][] dp = new int[m+1][n+1];
+        dp[0][0] = 1;
+        for(int i=1;i<=m;i++){
+            for(int j=1;j<=n;j++){
+                if(matrix[i-1][j-1]=='1'){
+                    dp[i][j] = Math.min(Math.min(dp[i-1][j],dp[i-1][j-1]),dp[i][j-1])+1;
+                    res = Math.max(res,dp[i][j]);
+                }
+            }
+        }
+        return res * res;
+    }
+
 189.count complete tree nodes
+这题用BFS的方法处理大数据的时候会TLE.所以我们也运用了数学上的一些小技巧。
+public int countNodes(TreeNode root) {
+        if(root == null ){
+            return 0;
+        }
+        int left = helper(root,true);
+        int right = helper(root,false);
+        if(left ==  right){
+            return (1<<left)-1;
+        }else{
+            return 1+ countNodes(root.left)+countNodes(root.right);
+        }
+    }
+    
+    private int helper(TreeNode node, boolean isLeft){
+        if(node ==  null) return 0;
+        return isLeft ? helper(node.left,true)+1 : helper(node.right,false)+1;
+    }
+
 190.rectangle area
+有一点像几何题。明确了长方形的结点的坐标就可以了。
+ public int computeArea(int A, int B, int C, int D, int E, int F, int G, int H) {
+        int areaA = (C-A)*(D-B);
+        int areaB = (G-E)*(H-F);
+        
+        int left = Math.max(A,E);
+        int right = Math.min(C,G);
+        int top = Math.min(H,D);
+        int bottom = Math.max(B,F);
+        
+        int overlap = 0;
+        if(right>=left && top >= bottom){
+            overlap = (right-left)*(top-bottom);
+        }
+        return areaA+areaB-overlap;
+    }
+
 191.basic calculator
+这道题难点就在有括号上面，而且括号是可以重叠的，我们要确定计算的优先级，如果没有这个括号我们可以使用stack简单的解决，有了括号我们需要先解决括号中的计算，方法就是将res和sign重置，sign=1就是正数，sign=-1就表示是负数。
+public int calculate(String s) {
+        Stack<Integer> stack = new Stack<>();
+        int res = 0;
+        int sign = 1;
+        for(int i=0;i<s.length();i++){
+            if(Character.isDigit(s.charAt(i))){
+                int num = s.charAt(i) - '0';
+                while(i+1<s.length() && Character.isDigit(s.charAt(i+1))){
+                    num = num * 10 + s.charAt(i+1) - '0';
+                    i++;
+                }
+                res += num * sign; 
+            }else if(s.charAt(i)=='+'){
+                sign = 1;
+            }else if(s.charAt(i)=='-'){
+                sign = -1;
+            }else if(s.charAt(i)=='('){
+                stack.push(res);
+                stack.push(sign);
+                res = 0;
+                sign = 1;
+            }else if(s.charAt(i)==')'){
+                res = res * stack.pop() + stack.pop();
+            }
+        }
+        return res;
+    }
+
 192.implement stack using queues
+关键就是找到queue和stack的原理的不同，只需要对add进行修改，修改完了之后就相当于stack.push了，其他的操作只要按部就班就可以了。
+class MyStack {
+
+    Queue<Integer> queue;
+    
+    /** Initialize your data structure here. */
+    public MyStack() {
+        queue = new LinkedList<>();
+    }
+    
+    /** Push element x onto stack. */
+    public void push(int x) {
+        queue.add(x);
+        for(int i=0;i<queue.size()-1;i++){
+            queue.add(queue.poll());
+        }
+    }
+    
+    /** Removes the element on top of the stack and returns that element. */
+    public int pop() {
+        return queue.poll();
+    }
+    
+    /** Get the top element. */
+    public int top() {
+        return queue.peek();
+    }
+    
+    /** Returns whether the stack is empty. */
+    public boolean empty() {
+        return queue.isEmpty();
+    }
+}
 
 193.invert binary tree
 这道题就是将同层的左右节点互换，可以使用bfs也可以使用dfs，但是本着能用bfs就不用dfs的原则，我写了bfs的解法。
@@ -5182,12 +5363,241 @@ if(root == null) return root;
         return root;
 
 194.basic calculator ii
+这题相比于上一个basic calculator多了乘数法，少了括号。但是其实做法没什么差别。
+public int calculate(String s) {
+        int res = 0;
+        char sign = '+';
+        int num = 0;
+        Stack<Integer> stack = new Stack<>();
+        for(int i=0;i<s.length();i++){
+            if(Character.isDigit(s.charAt(i))){
+                num = s.charAt(i) - '0';
+                while(i+1<s.length() && Character.isDigit(s.charAt(i+1))){
+                    num = num * 10 + s.charAt(i+1)-'0';
+                    i++;
+                }
+            }
+            if(!Character.isDigit(s.charAt(i)) && s.charAt(i)!=' ' || i==s.length()-1){
+                if(sign=='+') stack.push(num);
+                if(sign=='-') stack.push(-num);
+                if(sign=='*') stack.push(stack.pop()*num);
+                if(sign=='/') stack.push(stack.pop()/num);
+                sign = s.charAt(i);
+                num = 0;
+            }
+        }
+        
+        for(int i:stack){
+            res += i;
+        }
+        return res;
+    }
+
 195.summary ranges
+就是暴力解答就可以了，最关键的就是找到连续数的开头和结尾。
+public List<String> summaryRanges(int[] nums) {
+        List<String> res = new ArrayList<>();
+        if(nums==null || nums.length==0){
+            return res;
+        }
+        for(int i=0;i<nums.length;i++){
+            int num = nums[i];
+            while(i<nums.length-1 && nums[i]+1 == nums[i+1]){
+                i++;
+            }
+            if(num!=nums[i]){
+                res.add(num + "->" + nums[i]);
+            }else{
+                res.add(num+"");
+            }
+        }
+        return res;
+    }
+
 196. majority elements ii
+可以用moore voting algorithm来解决问题。
+public List<Integer> majorityElement(int[] nums) {
+        List<Integer> res = new ArrayList<>();
+        if(nums == null || nums.length==0){
+            return res;
+        }
+        int number1 = 0;
+        int number2 = 0;
+        int count1 = 0;
+        int count2 = 0;
+        for(int i=0;i<nums.length;i++){
+            if(nums[i]==number1){
+                count1++;
+            }else if(nums[i] == number2){
+                count2++;
+            }else if(count1==0){
+                number1 = nums[i];
+                count1 = 1;
+            }else if(count2 == 0){
+                number2 = nums[i];
+                count2 = 1;
+            }else{
+                count1--;
+                count2--;
+            }
+        }
+        
+        count1 = 0;
+        count2 = 0;
+        for(int i=0;i<nums.length;i++){
+            if(nums[i]==number1){
+                count1++;
+            }else if(nums[i]==number2){
+                count2++;
+            }
+        }
+        if(count1>nums.length/3){
+            res.add(number1);
+        }
+        if(count2>nums.length/3){
+            res.add(number2);
+        }
+        return res;
+    }
+
 197.kth smallest element in a bst
+一看到第k小的数，就想到使用priority queue来解答，当然是可以解答的，就像下面。但是也可以不用这么麻烦。
+PriorityQueue<Integer> pq = new PriorityQueue<>((a,b)->(b-a));
+    public int kthSmallest(TreeNode root, int k) {
+        if(root == null){
+            return 0;
+        }
+        helper(root);
+        int size = pq.size();
+        for(int i=0;i<size;i++){
+            if(pq.size()>k){
+                pq.poll();
+            }
+        }
+        return pq.peek();
+    }
+    private void helper(TreeNode root){
+        if(root == null) return;
+        helper(root.left);
+        pq.offer(root.val);
+        helper(root.right);
+    }
+
+第二种解答：
+private int res = 0;
+    private int count = 0;
+    public int kthSmallest(TreeNode root, int k) {
+        if(root == null){
+            return 0;
+        }
+        count = k;
+        helper(root);
+        return res;
+    }
+    private void helper(TreeNode root){
+        if(root == null) return;
+        helper(root.left);
+        count--;
+        if(count == 0){
+            res = root.val;
+        }
+        helper(root.right);
+    }
+
 198.implement queue using stacks
+这道题其实也是利用stack和queue的特点来解决问题的，一个是从一个点进和出，另一个 是从一边进另一边出，但是stack必须要用两个来实现queue的功能，因为如果从一个点进去的话我们让其出来再进去还是不变的。
+class MyQueue {
+
+    Stack<Integer> stack1;
+    Stack<Integer> stack2;
+    /** Initialize your data structure here. */
+    public MyQueue() {
+        stack1 = new Stack<>();
+        stack2 = new Stack<>();
+    }
+    
+    /** Push element x to the back of queue. */
+    public void push(int x) {
+        stack1.push(x);
+    }
+    
+    /** Removes the element from in front of queue and returns that element. */
+    public int pop() {
+        if(!stack2.isEmpty()){
+            return stack2.pop();
+        }else{
+            while(!stack1.isEmpty()) stack2.push(stack1.pop());
+            return stack2.pop();
+        }
+        
+    }
+    
+    /** Get the front element. */
+    public int peek() {
+        if(!stack2.isEmpty()) return stack2.peek();
+        else{
+            while(!stack1.isEmpty()) stack2.push(stack1.pop());
+            return stack2.peek();
+        }
+    }
+    
+    /** Returns whether the queue is empty. */
+    public boolean empty() {
+        return stack1.isEmpty() && stack2.isEmpty();
+    }
+}
+
+/**
+ * Your MyQueue object will be instantiated and called as such:
+ * MyQueue obj = new MyQueue();
+ * obj.push(x);
+ * int param_2 = obj.pop();
+ * int param_3 = obj.peek();
+ * boolean param_4 = obj.empty();
+ */
+
 199.number of digit one
+
 200.palindrome linked list
+因为这道题规定了空间复杂度为O(1),要不然有很多种方法，可以直接将整个链表反转，然后和原来的链表一起从头开始遍历比较。还可以将链表读取到一个数组中，然后进行比较。
+public boolean isPalindrome(ListNode head){
+        if(head== null){
+            return true;
+        }
+        ListNode middle = findMiddle(head);
+        middle.next = reverse(middle.next);
+        
+        ListNode p = head;
+        ListNode q = middle.next;
+        while(p!=null && q!=null){
+            if(p.val != q.val){
+                return false;
+            }
+            p = p.next;
+            q = q.next;
+        }
+        return true;
+    }
+    private ListNode findMiddle(ListNode head){
+        ListNode fast = head.next;
+        ListNode slow = head;
+        while(fast!=null && fast.next!=null){
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+    
+    private ListNode reverse(ListNode head){
+        ListNode prev = null;
+        while(head!=null){
+            ListNode temp = head.next;
+            head.next = prev;
+            prev = head;
+            head = temp;
+        }
+        return prev;
+    }
 
 201.word search
 这是一道典型的dfs的题目，使用backtracking的方法可以求解。
@@ -5220,3 +5630,19 @@ public boolean exist(char[][] board, String word) {
        
         return false;
     }
+
+202.add digits
+public int addDigits(int num) {
+        int sum = 0;
+        while(num !=0){
+            sum += num % 10;
+            num /= 10;
+        }
+        if(sum >= 10){
+            return addDigits(sum);
+        }else return sum;
+    }
+一个比较tricky的方法就是找规律，发现是每九个数一个循环。
+return (num-1)%9+1;
+
+203.number of islands ii
