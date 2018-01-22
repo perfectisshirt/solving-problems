@@ -5951,11 +5951,253 @@ public int minMeetingRooms(Interval[] intervals) {
     }
 
 215.verify preorder sequence in binary search tree
+一开始有点懵逼，只是知道了大体的一个大小走势.但是binary search tree的特征就是左<根<右，所以刚开始的时候是一路递减的，当遇到第一个大的数的时候表示遇到的是右子树，然后我们就将所有小于右子树的值清出来，将右子树放进去，继续进行上面的步骤，当前值比左子树的值小肯定是false,最后所有的判断都结束了返回true.
+public boolean verifyPreorder(int[] preorder) {
+        if(preorder == null || preorder.length==0) return true;
+        
+        Stack<Integer> stack = new Stack<>();
+        int min = Integer.MIN_VALUE;
+        for(int num:preorder){
+            if(num<min){
+                return false;
+            }
+            while(!stack.isEmpty() && num>stack.peek()){
+                min = stack.pop();
+            }
+            stack.push(num);
+        }
+        return true;
+    }
 
 216. paint house
+这是一道比较经典的dp问题。
+public int minCost(int[][] costs) {
+        if(costs == null || costs.length==0 || costs[0].length==0) return 0;
+        
+        for(int i=1;i<costs.length;i++){
+            costs[i][0] += Math.min(costs[i-1][1],costs[i-1][2]);
+            costs[i][1] += Math.min(costs[i-1][0],costs[i-1][2]);
+            costs[i][2] += Math.min(costs[i-1][1],costs[i-1][0]);
+        }
+        int n = costs.length-1;
+        return Math.min(Math.min(costs[n][0],costs[n][1]),costs[n][2]);
+    }
 
 217.3 sum smaller
 
 218.paint house ii
 
 219. palindrome permutation ii
+我们首先进行预判断，如果字符串中字符出现次数为奇数的字符超过一个，就说明这个字符是不可能组成palindrome的。然后我们需要找到其中的mid,如果出现次数有为1的字符，那么这个字符就是，如果没有就是””。然后就进行backtracing的操作，开始构造字符串。因为字符串是堆成的，所以我们只需要构造一半，另一半只需要reverse()就可以了，需要注意的是这里还是需要对重复duplicates进行判断，还要添加boolean数组来判断当前字符串是否被访问过。
+public List<String> generatePalindromes(String s) {
+        List<String> res = new ArrayList<>();
+        if(s==null || s.length()==0){
+            return res;
+        }
+        HashMap<Character,Integer> map = new HashMap<>();
+        List<Character> list = new ArrayList<>();
+        int odd = 0;
+        String mid = "";
+        for(int i=0;i<s.length();i++){
+            char c = s.charAt(i);
+            map.put(c,map.getOrDefault(c,0)+1);
+            odd += map.get(c)%2!=0 ? 1:-1;
+        }
+        if(odd>1) return res;
+        
+        for(HashMap.Entry<Character,Integer> entry: map.entrySet()){
+            char key = entry.getKey();
+            int val = entry.getValue();
+            if(val%2!=0) mid += key;
+            for(int i=0;i<val/2;i++){
+                list.add(key);
+            }
+        }
+        
+        helper(list,mid,new boolean[list.size()],new StringBuilder(),res);
+        return res;
+    }      
+    private void helper(List<Character> list, String mid, boolean[] used, StringBuilder sb,List<String> res){
+       if(sb.length()==list.size()){
+           res.add(sb.toString()+mid+sb.reverse().toString());
+           sb.reverse();
+           return;
+       } 
+        for(int i=0;i<list.size();i++){
+            if(i>0 && list.get(i) == list.get(i-1) && !used[i-1])
+                continue;
+            if(!used[i]){
+                used[i]=true;
+                sb.append(list.get(i));
+                helper(list,mid,used,sb,res);
+                used[i]=false;
+                sb.deleteCharAt(sb.length()-1);
+            }
+        }
+        
+    }
+
+220.closet binary search tree value
+根据binary search tree的性质就可以解答了。
+double min = Double.MAX_VALUE;
+        int res = 0;
+    public int closestValue(TreeNode root, double target) {
+        helper(root,target);
+        return res;
+    }
+    private void helper(TreeNode root, double target){
+        if(root == null) return;
+        
+        helper(root.left,target);
+        if(Math.abs(root.val-target)<min){
+                res = root.val;
+                min = Math.abs(root.val-target);
+            }
+        helper(root.right,target);
+    }
+
+221. Word pattern
+之前做过类似的题目，解法完全一样。
+public boolean wordPattern(String pattern, String str) {
+        
+        String[] arr = str.split(" ");
+        if(pattern.length()!=arr.length){
+            return false;
+        }
+        HashMap<Character,String> hm = new HashMap<>();
+        for(int i=0;i<arr.length;i++){
+            if(!hm.containsKey(pattern.charAt(i))){
+                if(hm.containsValue(arr[i])){
+                    return false;
+                }
+                    hm.put(pattern.charAt(i),arr[i]);
+            }else{
+                if(!hm.get(pattern.charAt(i)).equals(arr[i])){
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+
+222.flip game
+题目告诉了全是加号开始，要审题！在字符串中不能使用s.charAt(i) = ‘+’来替换字符。
+public List<String> generatePossibleNextMoves(String s) {
+        List<String> res = new ArrayList<>();
+        if(s==null || s.length()==0){
+            return res;
+        }
+        
+        for(int i=1;i<s.length();i++){
+            if(s.charAt(i)=='+' && s.charAt(i-1)=='+'){
+                res.add(s.substring(0,i-1)+"--"+s.substring(i+1));
+            }
+        }
+        return res;
+    }
+
+223.interleaving string
+这是一道二维的dp题目。就是第三个字符串要有第一个字符串和第二个字符串交叉组成，要保证其中的字符的相对顺序不能乱。这种题目设置一个二维的数组，row and col represent arr1 and arr2 which means the final result could be chosen from 1 or 2. 如果从左边取，就是左边的是true,那么就是从左边取的数的位置加上已经从上边取的数的个数。初始化的时候就是数组1中没有值，2中也没有值，当然结果数组中也是没有值的，那么就是true.
+public boolean isInterleave(String s1, String s2, String s3) {
+        if(s1.length()+s2.length()!=s3.length()){
+           return false;    
+        }
+        boolean [][] dp = new boolean[s1.length()+1][s2.length()+1];
+        dp[0][0]=true;
+        for(int i=1;i<dp.length;i++){
+            dp[i][0] = dp[i-1][0] && s1.charAt(i-1) == s3.charAt(i-1);
+        }
+        for(int j=1;j<dp[0].length;j++){
+            dp[0][j] = dp[0][j-1] && s2.charAt(j-1) == s3.charAt(j-1);
+        }
+        
+        for(int i=1;i<dp.length;i++){
+            for(int j=1;j<dp[0].length;j++){
+                dp[i][j] = (dp[i-1][j] && s1.charAt(i-1)==s3.charAt(i+j-1))
+                            ||(dp[i][j-1] && s2.charAt(j-1)==s3.charAt(i+j-1));
+            }
+        }
+        return dp[s1.length()][s2.length()];
+    }
+
+224.restore ip address
+这道题的代码量不是很大，但是需要判断的点很多。
+public List<String> restoreIpAddresses(String s) {
+        List<String> res = new ArrayList<>();
+        if(s==null || s.length()==0){
+            return res;
+        }
+        helper(res,s,0,"",0);
+        return res;
+    }
+    private void helper(List<String> res, String s,int index,String ret,int count){
+        if(count>4) return;
+        if(count==4 && index==s.length()){
+            res.add(ret);
+            return;
+        }
+        for(int i=1;i<4;i++){
+            if(index+i>s.length()) break;
+            String temp = s.substring(index,index+i);
+            if((temp.startsWith("0")&&temp.length()>1) || (i==3&&Integer.parseInt(temp)>=256)) continue;
+            helper(res,s,index+i,ret+temp+(count==3?"":"."),count+1);
+        }
+    }
+
+225.flip game ii
+这题相对于上一个题目来说是更进了一步，就是判断能不能赢。和上一题一样，初始化是都是”+”,只能够将”++” to “—-”。这里是要判断第一个操作的人能不能赢。这题相对巧妙的地方是使用hashmap来存储每一个便利到的字符串的状态，根据状态来决定怎么往下走和结果。
+public boolean canWin(String s) {
+        if(s==null || s.length()==0){
+            return false;
+        }
+        HashMap<String,Boolean> hm = new HashMap<>();
+        return helper(s,hm);
+    }
+    private boolean helper(String s,HashMap<String,Boolean> map){
+        if(map.containsKey(s)){
+            return map.get(s);
+        }
+        for(int i=1;i<s.length();i++){
+            if(s.charAt(i-1)=='+'&&s.charAt(i)=='+'){
+                String oppnent = s.substring(0,i-1)+"--"+s.substring(i+1);
+                if(!helper(oppnent,map)){
+                    map.put(s,true);
+                    return true;
+                }
+            }
+        }
+        map.put(s,false);
+        return false;
+    }
+
+226.palindrome partitioning
+这道题就是backtracking和is palindrome的结合，只是在进行backtracking的过程中加入了一个is palindrome的判断而已。
+public List<List<String>> partition(String s) {
+        List<List<String>> res = new ArrayList<>();
+        helper(s,res,new ArrayList<>());
+        return res;
+    }
+    
+    private void helper(String s,List<List<String>> res,List<String> list){
+         if(s.length()==0){
+             res.add(new ArrayList<>(list));
+             return;
+         }  
+        for(int i=0;i<s.length();i++){
+            if(isPalin(s.substring(0,i+1))){
+                list.add(s.substring(0,i+1));
+                helper(s.substring(i+1),res,list);
+                list.remove(list.size()-1);
+            }
+        }
+    }
+    private boolean isPalin(String res){
+        for(int i=0;i<res.length()/2;i++){
+            if(res.charAt(i)!=res.charAt(res.length()-i-1)){
+                return false;
+            }
+        }
+        return true;
+    }
+
+227.palindrome permutation ii
