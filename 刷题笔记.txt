@@ -5674,3 +5674,288 @@ public int countComponents(int n, int[][] edges) {
         return i;
         
     }
+
+205.shortest word distance
+再做这道题的时候一开始想的是记录出目标单词所有出现的位置，但是发现比较出来还是要计算的，过程并不简单，所以我就想能不能直接比较，就是找到了一个目标单词就记录出他的位置，两个单词各给一个，最终找两个的距离的最小值就可以了。但是要注意一点就是两个位置的起始值，不能从0开始，要不然(a,b)这样的case就会出错。
+public int shortestDistance(String[] words, String word1, String word2) {
+        if(words==null || words.length==0){
+            return 0;
+        }
+        
+        int num1 = -1;
+        int num2 = -1;
+        int min = Integer.MAX_VALUE;
+        for(int i=0;i<words.length;i++){
+            if(words[i].equals(word1)){
+                num1 = i;
+            }
+            if(words[i].equals(word2)){
+                num2 = i;
+            }
+            if(num1!=-1 && num2!=-1){
+                min = Math.min(Math.abs(num1-num2),min);
+            }
+        }
+        return min;
+    }
+
+206.shortest word distance ii
+如果题目说会不断重复调用什么函数的话就是说要设计data structure来减少其时间复杂度，一般都是用空间来换算。
+HashMap<String,List<Integer>> hm = new HashMap<>();
+    public WordDistance(String[] words) {
+         for(int i=0;i<words.length;i++){
+             if(hm.containsKey(words[i])){
+                 hm.get(words[i]).add(i);
+             }else{
+                 List<Integer> list = new ArrayList<>();
+                 list.add(i);
+                 hm.put(words[i],list);
+             }
+         }
+    }
+    
+    public int shortest(String word1, String word2) {
+        List<Integer> l1 = hm.get(word1);
+        List<Integer> l2 = hm.get(word2);
+        int res = Integer.MAX_VALUE;
+        for(Integer num1 : l1){
+            for(Integer num2: l2){
+                res = Math.min(res,Math.abs(num1-num2));
+            }
+        }
+        return res;
+    }
+
+207.shortest word distance iii
+这道题和前面不同的情况就在于新添加了一个限制条件，就是两个目标单词是可以相同的，但是两者的位置不能相同。其实结合前面的经验只需要对两个相同这个特殊条件进行单独判断就可以了。
+ public int shortestWordDistance(String[] words, String word1, String word2) {
+        int num1 = -1;
+        int num2 = -1;
+        if(words==null || words.length==0){
+            return 0;
+        }
+        int res = Integer.MAX_VALUE;
+        
+        for(int i=0;i<words.length;i++){
+            if(words[i].equals(word1)){
+                num1 = i;
+            }
+            if(words[i].equals(word2)){
+                if(word1.equals(word2)){
+                    num1 = num2;
+                }
+                num2 = i;
+            }
+            if(num1!=-1 && num2!= -1){
+                 res = Math.min(res,Math.abs(num1-num2));     
+            }
+        }
+         return res;
+    }
+这里的num1其实相当于记录前一个单词的位置的功能，如果不相同，前一个单词就是目标单词，但是如果两者相同，就相当于记录第一个单词的前一位就是初始化的位置-1，所以第二次赋值的时候就是第一次出现的位置。
+
+208.strobogrammatic number
+就是一个数旋转180度还和原来的单词一样。一开始还在纠结其他的数字怎么办，比如4这样的数字旋转完之后应该看做什么，其实题目只要判断几个能旋转的，所以直接将能旋转的字符添加到hashmap中再进行判断就可以了。
+public boolean isStrobogrammatic(String num) {
+        HashMap<Character,Character> hm = new HashMap<>();
+        hm.put('1','1');
+        hm.put('0','0');
+        hm.put('8','8');
+        hm.put('6','9');
+        hm.put('9','6');
+        StringBuilder sb = new StringBuilder();
+        for(int i=0;i<num.length();i++){
+            if(hm.containsKey(num.charAt(i))){
+                sb.append(hm.get(num.charAt(i)));
+            }
+        }
+        return num.equals(sb.reverse().toString());
+    }
+
+209.strobogrammatic number ii 
+这道题是用n-2来代替n-1，因为我们发现每一个n都是在n-1的基础上在数的两遍加上”11”,”69”,”96”,”88”.
+public List<String> findStrobogrammatic(int n) {
+       return helper(n,n);
+    }
+    
+    private List<String> helper(int n,int m){
+         
+        if(n==0){
+            
+            return new ArrayList<>(Arrays.asList(""));
+        }
+        if(n==1){
+            
+            return new ArrayList<>(Arrays.asList("0","1","8"));
+        }
+        List<String> list = helper(n-2,m);
+        List<String> res = new ArrayList<>();
+        for(int i=0;i<list.size();i++){
+            String s = list.get(i);
+            if(n!=m){
+                res.add("0" +s+ "0");
+            }
+            res.add("1" + s + "1");
+            res.add("8" + s + "8");
+            res.add("6" + s + "9");
+            res.add("9" + s + "6");
+        }
+        return res;
+    }
+
+210.strobogrammatic number iii
+public int strobogrammaticInRange(String low, String high) {
+        List<String> list = new ArrayList<>();
+        for(int i = low.length();i<=high.length();i++){
+            list.addAll(helper(i,i));
+        }
+        int res = 0;
+        for(String s:list){
+            if((s.length()==low.length() && s.compareTo(low)<0) || (s.length()==high.length() && s.compareTo(high)>0)) {
+                continue;
+            }
+               res++;
+        }
+        return res;
+    }
+    
+    private List<String> helper(int n, int m){
+        if(n==0) return new ArrayList<>(Arrays.asList(""));
+        if(n==1) return new ArrayList<>(Arrays.asList("1","0","8"));
+        
+        List<String> list = helper(n-2,m);
+        List<String> res = new ArrayList<>();
+        
+        for(int i=0;i<list.size();i++){
+            String s = list.get(i);
+            if(n!=m){
+                res.add("0" + s + "0");
+            }
+            res.add("1" + s + "1");
+            res.add("6" + s + "9");
+            res.add("9" + s + "6");
+            res.add("8" + s + "8");
+        }
+        return res;
+    }
+
+211.group shifted strings
+这道题也是要找到关键的规律，相同长度并且属于同一个group的string有这样一个规律，当第一个字母和a的差值就应该是这个字符串后面每一个字符和这个差值的差，比如abc,bcd，b和a的差是1，b后面的字符都是依次加1，而a后面的字符也是依次加一，所以差值并不会变化，我们将相同的group放进hashmap，然后遍历hashmap的keyset()，从而找到最终的答案。
+public List<List<String>> groupStrings(String[] strings) {
+        List<List<String>> res = new ArrayList<>();
+        HashMap<String,List<String>> map = new HashMap<>();
+        for(String str: strings){
+            int offset = str.charAt(0)-'a';
+            String key = "";
+            for(int i=0;i<str.length();i++){
+                char ch = (char)(str.charAt(i)-offset);
+                if(ch<'a'){
+                    ch += 26;
+                }
+                key += ch;
+            }
+            
+            if(!map.containsKey(key)){
+                List<String> list = new ArrayList<>();
+                map.put(key,list);   
+            }
+            map.get(key).add(str);
+        }
+        
+        for(String key:map.keySet()){
+            List<String> list = map.get(key);
+            Collections.sort(list);  //看题目要不要求结果有序
+            res.add(list);
+        }
+            
+        return res;
+    }
+
+212.count univalue subtree
+这道题使用的是后序遍历，因为我们需要对树的子节点进行判断。
+int res = 0;
+    public int countUnivalSubtrees(TreeNode root) {
+        if(root == null) return 0;
+        helper(root);
+        return res;
+    }
+    
+    private boolean helper(TreeNode root){
+        if(root == null) return true;
+        
+        boolean left = helper(root.left);
+        boolean right = helper(root.right);
+        
+        if(left && right){
+            if(root.left!=null && root.val != root.left.val){
+                return false;
+            }
+            if(root.right!=null && root.val != root.right.val){
+                return false;
+            }
+            res++;
+            return true;
+        }
+        return false;
+    }
+
+213.flatten 2D vector
+数据结构体一般都是自己设计数据结构来完成题目的要求。
+List<List<Integer>> res;
+    int indexList;
+    int indexElement;
+    public Vector2D(List<List<Integer>> vec2d) {
+        res = vec2d;
+        indexList = 0;
+        indexElement = 0;
+    }
+
+    @Override
+    public Integer next() {
+        return res.get(indexList).get(indexElement++);
+        
+    }
+
+    @Override
+    public boolean hasNext() {
+        while(indexList<res.size()){
+            if(indexElement<res.get(indexList).size()){
+                return true;
+            }else{
+                indexList++;
+                indexElement = 0;
+            }
+        }
+        return false;
+    }
+
+214. meeting rooms ii
+和16合起来看。这道题的想法还是蛮巧妙的，我们设置两个数组来记录会议开始的时间和结束的时间，对两个数组分别进行排序，如果开始时间小于结束的时间，那么就说明由会议正在进行就需要新开一个房间，如果大于了结束时间就说明有会议结束了可以用原来的房间继续进行会议。
+public int minMeetingRooms(Interval[] intervals) {
+        int[] start = new int[intervals.length];
+        int[] end = new int[intervals.length];
+        for(int i=0;i<intervals.length;i++){
+            start[i] = intervals[i].start;
+            end[i] = intervals[i].end;
+        }
+        Arrays.sort(start);
+        Arrays.sort(end);
+        int res = 0;
+        int last = 0;
+        for(int i=0;i<intervals.length;i++){
+            if(start[i]<end[last]){
+                res++;
+            }else last++;
+        }
+        return res;
+    }
+
+215.verify preorder sequence in binary search tree
+
+216. paint house
+
+217.3 sum smaller
+
+218.paint house ii
+
+219. palindrome permutation ii
