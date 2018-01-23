@@ -6200,4 +6200,54 @@ public List<List<String>> partition(String s) {
         return true;
     }
 
-227.palindrome permutation ii
+227.range sum query-immutable
+实现类的题目，一定要明白其中的函数是不是经常被调用，如果是一定要注意大数据这个问题。
+private int[] sum;
+    public NumArray(int[] nums) {
+        sum = new int[nums.length+1];
+        for(int i=0;i<nums.length;i++){
+            sum[i+1] = sum[i] + nums[i];
+        }
+    }
+    
+    public int sumRange(int i, int j) {
+       return sum[j+1]-sum[i];
+    }
+
+228.reverse vowels of a string
+采用双指针的方法来解答。但是要注意没有办法直接在字符串中进行交换值，变换值的操作，所以只能转换成数组，最后通过string.valueOf()来return.
+public String reverseVowels(String s) {
+        if(s==null || s.length()==0){
+            return s;
+        }
+        char[] arr = s.toCharArray();
+        String vowels = "aeiouAEIOU";
+        int left = 0;
+        int right = s.length()-1;
+        while(left<right){
+            while(left<right&&vowels.indexOf(arr[left])==-1){
+               left++;
+            }
+            while(left<right&&vowels.indexOf(arr[right])==-1){
+                right--;
+            }
+                char temp = arr[right];
+                arr[right] = arr[left];
+                arr[left]=temp;
+                right--;
+            left++;
+        }
+        return String.valueOf(arr);
+    }
+
+229.valid perfect square
+public boolean isPerfectSquare(int num) {
+        if(num<1) return false;
+        if(num==1) return true;
+        for(int i=1;i<=Math.sqrt(num);i++){
+            if(i*i==num) return true;
+        }
+        return false;
+    }
+
+230.moving average from data stream
