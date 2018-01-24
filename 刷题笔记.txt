@@ -1386,6 +1386,7 @@ public int searchInsert(int[] nums, int target) {
     }
 
 49.binary tree inorder traversal
+recursion方法：
     public List<Integer> inorderTraversal(TreeNode root) {
         List<Integer> results = new ArrayList<Integer>();
         helper(root,results);
@@ -1397,6 +1398,8 @@ public int searchInsert(int[] nums, int target) {
         results.add(root.val);
         helper(root.right,results);
     }
+iterative方法:
+
 
 50. valid number
 这道题的描述就十分的抽象，只是判断一个字符串是不是valid number,是哪一类的数，int,float都不知道，是正是负不知道，如果是小数，采取什么样的表示方式也不知道，所以这道题只能列举出所有的可能性再针对每一个可能性进行判断。
@@ -5647,6 +5650,7 @@ return (num-1)%9+1;
 
 203.number of islands ii
 
+
 204.number of connected components in an undirected graph
 这是一道标准的使用union-find来解决的题目。
 public int countComponents(int n, int[][] edges) {
@@ -6472,6 +6476,244 @@ public int maxProfit(int[] prices) {
         return sell;
     }
 239.3 sum
+和3sum close的想法差不多，都是two pointer，但是做法又不一样，最容易出错的地方就是要去重。刚开始的时候要，防止i和low重复，如果没有这一步就会solution出现重复的解。还有就是要知道arrays.aslist的用法。
+ public List<List<Integer>> threeSum(int[] nums) {
+        List<List<Integer>> res = new ArrayList<>();
+        if(nums==null || nums.length==0){
+            return res;
+        }
+        Arrays.sort(nums);
+        for(int i=0;i<nums.length-2;i++){
+            if(i>0 && nums[i-1]==nums[i]) continue;
+            int low=i+1,high=nums.length-1,sum=0-nums[i];
+            while(low<high){
+                if(nums[low]+nums[high]==sum){
+                    res.add(Arrays.asList(nums[low],nums[high],nums[i]));
+                    while(low<high && nums[low]==nums[low+1]) low++;
+                    while(low<high && nums[high]==nums[high-1]) high--;
+                    low++;
+                    high--;
+                }else if(nums[low]+nums[high]<sum){
+                    low++;
+                }else high--;
+            }
+        }
+        return res;
+    }
 
+240.4sum
+就是在前面增加的循环里增加了一个查重的语句，后面就完全是和3sum一样的解法。
+ public List<List<Integer>> fourSum(int[] nums, int target) {
+ 
+        List<List<Integer>> res = new ArrayList<>();
+        if(nums==null || nums.length<4){
+            return res;
+        }
+        Arrays.sort(nums);
+        for(int i=0;i<nums.length-3;i++){
+            if(i>0 &&  nums[i]==nums[i-1]) continue;
+            for(int j=i+1;j<nums.length-2;j++){
+                if(j>i+1 && nums[j]==nums[j-1]) continue;
+                int low = j+1, high = nums.length-1;
+                while(low<high){
+                    int sum = nums[i]+nums[j]+nums[low]+nums[high];
+                    if(target==sum){
+                        res.add(Arrays.asList(nums[j],nums[low],nums[high],nums[i]));
+                        while(low<high&&nums[low]==nums[low+1]) low++;
+                        while(low<high&&nums[high]==nums[high-1]) high--;
+                        low++;
+                        high--;
+                    }else if(sum>target){
+                        high--;
+                    }else low++;
+                }
+            }
+        }
+        return res;
+    }
 
-240.
+241.repeated DNA sequences
+这道题用hashset来解答非常的简单，但是需要注意的点就是重复的问题，我一开始是直接用arraylist来存放结果，但是我只是保证了在原string中不会有重复的字符串放进来，但是我不能保证放进来的这些字符串不重复，比如AAAAAAAAAAAA。
+public List<String> findRepeatedDnaSequences(String s) {
+        
+        if(s==null || s.length()<10){
+            return new ArrayList<>();
+        }
+        HashSet<String> seen = new HashSet<>();
+        HashSet<String> res = new HashSet<>();
+        for(int i=0;i<s.length()-9;i++){
+            if(!seen.add(s.substring(i,i+10))){
+                res.add(s.substring(i,i+10));
+            }
+            seen.add(s.substring(i,i+10));
+        }
+        
+        return new ArrayList<>(res);
+    }
+
+242.construct binary tree from preorder and inorder traversal
+我们在preorder中寻找根节点，我们知道preorder[0]放的就是整棵树的root，然后用inorder来确定左右子树，在inorder中找到和在preorder中值相同的那个root,在其左边的就是左子树，右边的就是右子树，然后迭代来完成，有一点需要注意，就是root.right那一个判断语句的第一个，prestart+index-instart+1，index-instart+1就是计算出有多少个左子树结点，因为我们知道preorder是根-左-右的遍历顺序，所以在根节点之后去掉左结点才是右结点的开始。
+public TreeNode buildTree(int[] preorder, int[] inorder) {
+       return helper(0,0,inorder.length-1,preorder,inorder);
+    }
+    private TreeNode helper(int preStart,int inStart,int inEnd,int[] preorder,int[] inorder){
+        if(preStart>preorder.length-1 || inStart>inEnd){
+            return null;
+        }
+        TreeNode root = new TreeNode(preorder[preStart]);
+        int index = 0;
+        for(int i=inStart;i<=inEnd;i++){
+            if(inorder[i]==root.val){
+                index = i;
+            }
+        }
+        root.left = helper(preStart+1,inStart,index-1,preorder,inorder);
+        root.right = helper(preStart+index-inStart+1,index+1,inEnd,preorder,inorder);
+        return root;
+    }
+243.construct binary tree from inorder and postorder traversal
+和上一题很像，只是把preorder改成了postorder,我们知道后序的最后一个结点肯定是整棵树的root，所以这道题就是从postorder的后面往前遍历，只是这里的root.right很容易出错，我在postorder的前后赋值出现了错误。
+public TreeNode buildTree(int[] inorder, int[] postorder) {
+        return helper(0,inorder.length-1,0,postorder.length-1,inorder,postorder);
+    }
+    private TreeNode helper(int inStart,int inEnd,int postStart,int postEnd, int[] inorder,int[] postorder){
+        if(inStart>inEnd || postStart>postEnd){
+            return null;
+        }
+        TreeNode root = new TreeNode(postorder[postEnd]);
+        int index = 0;
+        for(int i=inStart;i<=inEnd;i++){
+            if(inorder[i]==root.val){
+                index = i;
+            }
+        }
+        root.left = helper(inStart,index-1,postStart,postStart+index-inStart-1,inorder,postorder);
+        root.right = helper(index+1,inEnd,postStart+index-inStart,postEnd-1,inorder,postorder);
+        return root;
+    }
+
+244.convert sorted list to binary search tree
+有了上面两题的经验，这道题就不是那么难了，首先我们运用快慢指针找到链表的中点，然后不断recursion就能欧找到root的左子树和右子树，之所以找中间的点就是因为这个树要是balanced的。
+public TreeNode sortedListToBST(ListNode head) {
+        if(head==null){
+            return null;
+        }
+        return toBST(head,null);
+    }
+    private TreeNode toBST(ListNode head,ListNode tail){
+        if(head==tail) return null;
+        ListNode slow = head;
+        ListNode fast = head;
+        while(fast!=tail && fast.next!=tail){
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        TreeNode root = new TreeNode(slow.val);
+        root.left = toBST(head,slow);
+        root.right = toBST(slow.next,tail);
+        return root;
+    }
+
+245.flatten binary tree to linked list
+相当于是一个后序的遍历。
+private TreeNode prev = null;
+    public void flatten(TreeNode root) {
+        if(root ==  null) return;
+        flatten(root.right);
+        flatten(root.left);
+        root.right = prev;
+        root.left =  null;
+        prev = root;
+    }
+
+246.binary tree preorder traversal
+recursion的方法很简单，如下：
+public List<Integer> preorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if(root == null) return res;
+        helper(res,root);
+        return res;
+    }
+    private void helper(List<Integer> res, TreeNode root){
+        if(root == null) return;
+        res.add(root.val);
+        helper(res,root.left);
+        helper(res,root.right);
+    }
+非recursion的方法：
+我们在这里使用stack来存储数据并不是queue，因为如果是queue的话，遇到了空节点会出错，比如1    这种情况就会出错。
+                                                                            / \
+                                                                           4   3
+                                                                           /  
+                                                                           2
+public List<Integer> preorderTraversal(TreeNode root) {                
+
+        List<Integer> res = new ArrayList<>();
+        Stack<TreeNode> tree = new Stack<>();
+        if(root == null){
+            return res;
+        }
+        tree.push(root);
+        while(!tree.isEmpty()){
+            TreeNode tempNode = tree.pop();
+            if(tempNode!=null){
+                res.add(tempNode.val);
+                tree.push(tempNode.right);
+                tree.push(tempNode.left);
+            }
+        }
+        return res;
+    }
+
+247. binary tree postorder traversal
+recursion的方法：
+public List<Integer> postorderTraversal(TreeNode root) {
+        List<Integer> res = new ArrayList<>();
+        if(root == null){
+            return res;
+        }
+        helper(root,res);
+        return res;
+    }
+    private void helper(TreeNode root, List<Integer> res){
+        if(root == null) return;
+        helper(root.left,res);
+        helper(root.right,res);
+        res.add(root.val);
+    }
+非recursion的方法：
+List<Integer> resultList=new ArrayList<>();
+        if(root==null)
+            return resultList;
+        Map<TreeNode,Integer> visitedMap=new HashMap<>();
+        Stack<TreeNode> toBeVisitedStack=new Stack<>();
+        toBeVisitedStack.push(root);
+        while(!toBeVisitedStack.isEmpty()){
+            TreeNode tempNode=toBeVisitedStack.peek(); //注意这里是peek而不是pop
+            if(tempNode.left==null && tempNode.right==null){ //如果没有左右孩子则访问
+                resultList.add(tempNode.val);
+                visitedMap.put(tempNode, 1);
+                toBeVisitedStack.pop();
+                continue;
+            }else if(!((tempNode.left!=null&&visitedMap.get(tempNode.left)==null )|| (tempNode.right!=null && visitedMap.get(tempNode.right)==null))){
+                //如果节点的左右孩子均已被访问            
+                resultList.add(tempNode.val);
+                toBeVisitedStack.pop();
+                visitedMap.put(tempNode, 1);
+                continue;
+            }
+            if(tempNode.left!=null){
+                while(tempNode.left!=null && visitedMap.get(tempNode.left)==null){//左孩子没有被访问
+                    toBeVisitedStack.push(tempNode.left);
+                    tempNode=tempNode.left;
+                }
+            }
+            if(tempNode.right!=null){
+                if(visitedMap.get(tempNode.right)==null){//右孩子没有被访问
+                    toBeVisitedStack.push(tempNode.right);
+                }               
+            }
+        }
+        return resultList;
+
+248.
