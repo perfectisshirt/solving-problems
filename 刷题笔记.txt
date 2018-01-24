@@ -5984,8 +5984,63 @@ public int minCost(int[][] costs) {
     }
 
 217.3 sum smaller
+最直接的想法就是暴力解。
+public int threeSumSmaller(int[] nums, int target) {
+        if(nums == null || nums.length==0){
+            return 0;
+        }
+        int res = 0;
+        for(int i=0;i<nums.length-2;i++){
+            for(int j=i+1;j<nums.length-1;j++){
+                for(int k=j+1;k<nums.length;k++){
+                    if(nums[i]+nums[j]+nums[k]<target){
+                        res++;
+                    }
+                }
+            }
+        }
+        return res;
+    }
+但是题目的follow up是要求使用O(n^2)。因为我们发现最终的结果和下表并没有关系，所以为了计算方便我们可以先进行排序。
+Arrays.sort(nums);
+        int res = 0;
+        for(int i=0;i<nums.length-2;i++){
+            int left = i+1;
+            int right = nums.length-1;
+            while(left<right){
+                if(nums[i]+nums[left]+nums[right]<target){
+                    res+=right-left;
+                    left++;
+                }else right--;
+            }
+        }
+        return res;
+这里的right-left就是说，三个数相加已经比target小了，那么在i和left都不变的情况下在left右边到right之间的数肯定都是满足条件的，所以直接加上去就可以了。
 
 218.paint house ii
+和第一题不一样的地方就是，这里的颜色有k种，如果还是和之前的三种颜色一样的话就会TLE。我们这里使用min1 and min2来表示之前房子的最小和第二小的花费的颜色。
+public int minCostII(int[][] costs) {
+        if(costs != null && costs.length == 0) return 0;
+        int prevMin = 0, prevSec = 0, prevIdx = -1;
+        for(int i = 0; i < costs.length; i++){
+            int currMin = Integer.MAX_VALUE, currSec = Integer.MAX_VALUE, currIdx = -1;
+            for(int j = 0; j < costs[0].length; j++){
+                costs[i][j] = costs[i][j] + (prevIdx == j ? prevSec : prevMin);
+                // 找出最小和次小的，最小的要记录下标，方便下一轮判断
+                if(costs[i][j] < currMin){
+                    currSec = currMin;
+                    currMin = costs[i][j];
+                    currIdx = j;
+                } else if (costs[i][j] < currSec){
+                    currSec = costs[i][j];
+                }
+            }
+            prevMin = currMin;
+            prevSec = currSec;
+            prevIdx = currIdx;
+        }
+        return prevMin;
+    }
 
 219. palindrome permutation ii
 我们首先进行预判断，如果字符串中字符出现次数为奇数的字符超过一个，就说明这个字符是不可能组成palindrome的。然后我们需要找到其中的mid,如果出现次数有为1的字符，那么这个字符就是，如果没有就是””。然后就进行backtracing的操作，开始构造字符串。因为字符串是堆成的，所以我们只需要构造一半，另一半只需要reverse()就可以了，需要注意的是这里还是需要对重复duplicates进行判断，还要添加boolean数组来判断当前字符串是否被访问过。
@@ -6251,3 +6306,172 @@ public boolean isPerfectSquare(int num) {
     }
 
 230.moving average from data stream
+这道题一看就是用queue实现。每次初始化data值的时候要注意其private的添加，就像创建新的function一样。每次做设计题的时候总是想着在当前的函数中完成整个题目的意思，但是其实题目的意思是一个函数只完成一个部分的功能，循序渐进的执行！！
+private Queue<Integer> queue;
+    private int cap;
+    private double sum = 0;
+    /** Initialize your data structure here. */
+    public MovingAverage(int size) {
+        queue = new LinkedList<>();
+        cap = size;
+    }
+    
+    public double next(int val) {
+        if(queue.size()==cap){
+            sum -= queue.remove();
+        }
+        sum += val;
+        queue.offer(val);
+        return sum/queue.size();
+    }
+
+231.nested list weight sum
+这其实是一道dfs的题目，题目中的数据给出的类型特别像树。
+public int depthSum(List<NestedInteger> nestedList) {
+        if(nestedList==null) return 0;
+        return helper(nestedList,1);
+    }
+    
+    private int helper(List<NestedInteger> nestedList, int depth){
+        int res = 0;
+        for(NestedInteger nest: nestedList){
+            if(nest.isInteger()){
+                res += nest.getInteger()*depth;
+            }else{
+                res += helper(nest.getList(),depth+1);
+            }
+        }
+        return res;
+    }
+
+232.logger rate limiter
+这就是一道hash map的题目，输入一个message还有一个输入该字符串的时间，当再出现这个字符串的时候要保证时间差超过10秒。
+HashMap<String,Integer> hm;
+    /** Initialize your data structure here. */
+    public Logger() {
+        hm = new HashMap<>();
+    }
+    
+    /** Returns true if the message should be printed in the given timestamp, otherwise returns false.
+        If this method returns false, the message will not be printed.
+        The timestamp is in seconds granularity. */
+    public boolean shouldPrintMessage(int timestamp, String message) {
+        if(hm.containsKey(message)){
+           if(timestamp-hm.get(message)<10){
+                return false;
+            }else hm.put(message,timestamp);
+        }else hm.put(message,timestamp);
+        return true;
+    }
+
+233.nth digit
+将自然序列看成一个长字符串，求第n位上的数字是什么，比如给的n=10,那么值就是1.考虑到int溢出的问题，将区间值设置为long型。这道题就相当于是暴力求解，首先要找到这个数在的区间，确定这个数，然后再在这个数中找到题目要求的那个位置的数字。
+public int findNthDigit(int n) {
+        int start = 1;
+        int len = 1;
+        long count = 9;
+        while(n > len * count){
+            n -= len * count;
+            len += 1;
+            count *= 10;
+            start *= 10;
+        }
+        start += (n-1)/len;   //找到要找的这个数字
+        String s = Integer.toString(start);
+        return s.charAt((n-1)%len)-'0';    //找到指定的那个位置的数
+    }
+
+234.best time to buy and sell stock 
+给定一个数组表示第ith天的股票的价格，只进行一次交易，也就是买完了卖求最大的利益。暴力操作会TLE。想要让利润尽可能的大我们最直观的想法就是取一个最小值，然后后面的一个最大值和这个数的差值就应该是最大，但是就会出现像【2，4，1】这样的错误。所以我们只能动态的取最小值，也就是说每次比较的过程中去当前值和Min的最小值，然后取当前值和最小值的差和profit的最大值。
+public int maxProfit(int[] prices) {
+        if(prices==null || prices.length<2){
+            return 0;
+        }
+        int min = prices[0];
+        int profit = 0;
+        for(int price:prices){
+            min = Math.min(min,price);    
+            profit = Math.max(profit,price-min);
+        }
+        
+        return profit;
+    }
+
+235.best time to buy and sell stock ii
+这道题相对于上一题的不同就是可以进行多次的交易，但是规定必须要先卖掉手里的股票然后才能买下一只股票。如果能够多次交易就是每次找到更新了最小值就将前面的profit加到结果中，所以只需将递增数列其差值然后把值加到最后的结果中。
+public int maxProfit(int[] prices) {
+        if(prices==null || prices.length<2){
+            return 0;
+        }
+        int profit = 0;
+        for(int i=1;i<prices.length;i++){
+            if(prices[i]>prices[i-1]){
+                profit += prices[i]-prices[i-1];
+            }    
+        }
+        return profit;
+    }
+
+236.best time to buy and sell stock iii
+这次的题意是最多进行两次交易求其最大利润。我们设置买入的点是负值，卖出的点从0开始。其实这道题是使用dp的方法，但是并不是传统意义上的使用数组来记录每次的路径值，而是进行一个迭代一样的步骤，就像斐波那契数列一样。
+public int maxProfit(int[] prices) {
+        int buy1 = Integer.MIN_VALUE;
+        int buy2 = Integer.MIN_VALUE;
+        int sell1 = 0, sell2 = 0;
+        for(int price:prices){
+            sell2 = Math.max(sell2,buy2 + price);
+            buy2 = Math.max(buy2,sell1 - price);
+            sell1 = Math.max(sell1,buy1 + price);
+            buy1 = Math.max(buy1,-price);
+        }
+        return sell2;
+    }
+
+237.best time to buy and sell stock iV
+这次是进行k次交易，求其最大利润。这道题用dp来解答，理解起来有点难度。设置dp[i][j]表示当前第j天进行i次交易的最大利润。交易分为买入和卖出两个操作，所以如果k>=len/2,就表示超出了范围，也就可以理解为进行了无限多次的操作，就和ii一样的解答了。想法和上一题有点像，就是买入值我们都初始为负值，这样当前的价格加上买入值就是利润。每一次我们都要更新一下买入值，temMax.
+public int maxProfit(int k, int[] prices) {
+        int len = prices.length;
+        if(k>=len/2) return helper(prices);
+        int[][] dp = new int[k+1][len];
+        for(int i=1;i<=k;i++){
+            int temMax = -prices[0];
+            for(int j=1;j<len;j++){
+                dp[i][j] = Math.max(dp[i][j-1],prices[j]+temMax);
+                temMax = Math.max(temMax,dp[i-1][j-1]-prices[j]);
+            }
+        }
+        return dp[k][len-1];
+    }
+    
+    private int helper(int[] prices){
+        int res = 0;
+        for(int i=1;i<prices.length;i++){
+            if(prices[i]>prices[i-1]){
+                res += prices[i]-prices[i-1];
+            }
+        }
+        return res;
+    }
+
+238.best time to buy and sell stock with cool down
+也是一个dp题目。
+buy[i]  第i天之前最后一个操作是买，此时的最大收益
+sell[i] 第i天之前最后一个操作是卖，此时的最大收益
+rest[i] 第i天之前最后一个操作是cooldown，此时的最大收益
+因为cool down期间不会有任何的profit的变动，所以rest[i]=sell[i-1].最后的返回值就是sell，因为最后的结果肯定是卖完了的profit.
+public int maxProfit(int[] prices) {
+        int sell = 0, prevSell = 0;
+        int buy = Integer.MIN_VALUE,prevBuy = 0;
+        
+        for(int price:prices){
+            prevBuy = buy;
+            buy = Math.max(prevSell-price,prevBuy);
+            prevSell = sell;
+            sell = Math.max(prevBuy + price, prevSell);
+        }
+        return sell;
+    }
+239.3 sum
+
+
+240.
