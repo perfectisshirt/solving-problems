@@ -1399,7 +1399,29 @@ recursion方法：
         helper(root.right,results);
     }
 iterative方法:
-
+public List<Integer> inorderTraversal(TreeNode root) {
+        List<Integer> visitedList=new ArrayList<>();
+        Map<TreeNode,Integer> visitedNodeMap=new HashMap<>();//保存已访问的节点
+        Stack<TreeNode> toBeVisitedNodes=new Stack<>();//待访问的节点
+        if(root==null)
+            return visitedList;
+        toBeVisitedNodes.push(root);
+        while(!toBeVisitedNodes.isEmpty()){
+            TreeNode tempNode=toBeVisitedNodes.peek(); //注意这里是peek而不是pop
+            while(tempNode.left!=null){ //如果该节点的左节点还未被访问，则需先访问其左节点
+                if(visitedNodeMap.get(tempNode.left)!=null) //该节点已经被访问（不存在某个节点已被访问但其左节点还未被访问的情况）
+                    break;
+                toBeVisitedNodes.push(tempNode.left);
+                tempNode=tempNode.left;
+            }
+            tempNode=toBeVisitedNodes.pop();//访问节点
+            visitedList.add(tempNode.val);
+            visitedNodeMap.put(tempNode, 1);//将节点加入已访问map
+            if(tempNode.right!=null) //将右结点入栈
+                toBeVisitedNodes.push(tempNode.right);
+        }
+        return visitedList;
+    }
 
 50. valid number
 这道题的描述就十分的抽象，只是判断一个字符串是不是valid number,是哪一类的数，int,float都不知道，是正是负不知道，如果是小数，采取什么样的表示方式也不知道，所以这道题只能列举出所有的可能性再针对每一个可能性进行判断。
@@ -6716,4 +6738,477 @@ List<Integer> resultList=new ArrayList<>();
         }
         return resultList;
 
-248.
+248.pascal’s triangle
+这里的规律就是上一行的同列数和同列数+1的那个数的和。所以这道题是一个实现题。list.add(index,val)这个函数是在index位置上加入给定的值，不管此刻这个位置有没有值，有的话就把原先的值往后移。这题还是蛮巧妙的 ，所有的操作都是在一个list上完成的。
+public List<List<Integer>> generate(int numRows) {
+        List<List<Integer>> res = new ArrayList<>();
+        List<Integer> list = new ArrayList<>();
+        for(int i=0;i<numRows;i++){
+            list.add(0,1);
+            for(int j=1;j<list.size()-1;j++){
+                list.set(j,list.get(j)+list.get(j+1));
+            }
+            res.add(new ArrayList<>(list));
+        }
+        return res;
+    }
+
+249.pascal’s triangle ii
+这题只是少了一个将list<Integer>加入到list<list<Integer>>的过程，其他都是一样的。
+public List<Integer> getRow(int rowIndex) {
+        
+        List<Integer> res = new ArrayList<>();
+        for(int i=-1;i<rowIndex;i++){
+            res.add(0,1);
+            for(int j=1;j<res.size()-1;j++){
+                res.set(j,res.get(j)+res.get(j+1));
+            }
+        }
+        return res;
+    }
+
+250.triangle
+并不是取每一层的最小的数，如果是的话就是用greedy做。那么这道题就是使用dp来解决，这是这题我们从底部开始网上做。
+public int minimumTotal(List<List<Integer>> triangle) {
+        int[] res = new  int[triangle.size()+1];
+        for(int i=triangle.size()-1;i>=0;i--){
+            for(int j=0;j<triangle.get(i).size();j++){
+                res[j] = Math.min(res[j],res[j+1])+triangle.get(i).get(j);
+            }
+        }
+        return res[0];
+    }
+
+251.populating next right pointers in each node
+public void connect(TreeLinkNode root) {
+        if(root == null){
+            return;
+        }
+       if(root.left!=null){
+           root.left.next = root.right;
+       }
+        if(root.next!=null && root.right!=null){
+            root.right.next = root.next.left;
+        }
+        connect(root.left);
+        connect(root.right);
+    }
+252.populating next right pointers in each node ii
+这道题使用的是层序遍历，相对于上一题来说，这题的右结点的左结点如果为空还是按照上一题的perfect binary tree来解答的话就会出错。
+public void connect(TreeLinkNode root) {
+        if(root == null)  
+        return;  
+    TreeLinkNode lastHead = root;  
+    TreeLinkNode pre = null;  
+    TreeLinkNode curHead = null;  
+    while(lastHead!=null)  
+    {  
+        TreeLinkNode lastCur = lastHead;  
+        while(lastCur != null)  
+        {  
+            if(lastCur.left!=null)  
+            {  
+                if(curHead == null)  
+                {  
+                    curHead = lastCur.left;  
+                    pre = curHead;  
+                }  
+                else  
+                {  
+                    pre.next = lastCur.left;  
+                    pre = pre.next;  
+                }  
+            }  
+            if(lastCur.right!=null)  
+            {  
+                if(curHead == null)  
+                {  
+                    curHead = lastCur.right;  
+                    pre = curHead;  
+                }  
+                else  
+                {  
+                    pre.next = lastCur.right;  
+                    pre = pre.next;  
+                }  
+            }                  
+            lastCur = lastCur.next;  
+  
+        }  
+        lastHead = curHead;  
+        curHead = null;  
+    }  
+    }
+
+253.largest number
+如果是每一个数都可以拆开来将每一位进行组合就可以使用桶排序的思想来解决。但是这里的数字是不能拆分的。这道题考察的是对排序算法的重写。
+public String largestNumber(int[] nums) {
+        if(nums==null || nums.length==0){
+            return "";
+        }
+        String[] res = new String[nums.length];
+        for(int i=0;i<nums.length;i++){
+            res[i] = String.valueOf(nums[i]);
+        }
+        Arrays.sort(res,new Comparator<String>(){
+            @Override
+            public int compare(String str1,String str2){
+                String s1 = str1 + str2;
+                String s2 = str2 + str1;
+                return s2.compareTo(s1);
+            }
+        });
+        if(res[0].charAt(0)=='0'){
+            return "0";
+        }
+        StringBuilder sb = new StringBuilder();
+        for(String s:res){
+            sb.append(s);
+        }
+        return sb.toString();
+    }
+
+254.binary search tree iterator
+public class BSTIterator {
+
+    private TreeNode cur;
+    private Stack<TreeNode> stack;
+    
+    public BSTIterator(TreeNode root) {
+        cur = root;
+        stack = new Stack<>();
+    }
+
+    
+    /** @return whether we have a next smallest number */
+    public boolean hasNext() {
+        if(!stack.isEmpty() || cur!=null) return true;
+        return false;
+    }
+
+    /** @return the next smallest number */
+    public int next() {
+        while(cur != null){
+            stack.push(cur);
+            cur = cur.left;
+        }
+        cur = stack.pop();
+        int val = cur.val;
+        cur = cur.right;
+        return val;
+    }
+}
+
+255.distinct subsequences
+
+
+256.merge k sorted lists
+这是一个分治的解法。
+public ListNode mergeKLists(ListNode[] lists) {
+        if(lists==null || lists.length==0){
+            return null;
+        }
+        return sort(lists,0,lists.length-1);
+    }
+    private ListNode sort(ListNode[] lists,int start,int end){
+        if(start>=end){
+            return lists[start];
+        }
+        int mid = start+(end-start)/2;
+        ListNode l1 = sort(lists,start,mid);
+        ListNode l2 = sort(lists,mid+1,end);
+        return merge(l1,l2);
+    }
+    private ListNode merge(ListNode l1,ListNode l2){
+        if(l1 == null) return l2;
+        if(l2==null) return l1;
+        if(l1.val<l2.val){
+            l1.next = merge(l1.next,l2);
+            return l1;
+        }
+        l2.next = merge(l1,l2.next);
+        return l2;
+    }
+这道题还可以使用PriorityQueue来解答。
+PriorityQueue<ListNode> pq = new PriorityQueue<>(lists.length,(a,b)->a.val-b.val);
+        for(int i=0;i<lists.length;i++){
+            if(lists[i]!=null){
+                pq.offer(lists[i]);
+            }
+        }
+        ListNode dummy = new ListNode(0);
+        ListNode cur = dummy;
+        while(!pq.isEmpty()){
+            cur.next = pq.poll();
+            cur = cur.next;
+            if(cur.next!=null){
+                pq.offer(cur.next);
+            }
+        }
+        return dummy.next;
+
+257.degree of an array
+就是说给定一个数组，这个数组中的数出现次数最多的那个数的次数就是这个数组的度，然后我们要求和这个度相同的子数组最小是多长。首先肯定是要确定这个数组的度是多少，用hashmap遍历一遍就可以，然后要求最短，肯定最好就是从这个度的数开始，再从这个数结束，那么我们就要再确定这个数的开始和结束的位置。
+public int findShortestSubArray(int[] nums) {
+        Map<Integer, Integer> counts = new HashMap<>();
+        Map<Integer, Integer> starts = new HashMap<>();
+        Map<Integer, Integer> ends = new HashMap<>();
+        int maxCount = Integer.MIN_VALUE;
+        for (int i = 0; i < nums.length; i++) {
+            int num = nums[i];
+            if (!starts.containsKey(num)) {
+                starts.put(num, i);
+                counts.put(num, 0);
+            }
+            counts.put(num, counts.get(num) + 1);
+            ends.put(num, i);
+            maxCount = Math.max(maxCount, counts.get(num));
+        }
+        int result = Integer.MAX_VALUE;
+        for (Map.Entry<Integer, Integer> entry : counts.entrySet()) {
+            if (entry.getValue() == maxCount) {
+                result = Math.min(result, ends.get(entry.getKey()) - starts.get(entry.getKey()) + 1);
+            }
+        }
+        return result;
+        
+    }
+258.find the derangement of an array
+可以说这是一道数学题，n个帽子给n个人带，那么有n!个可能，但是题目要求自己不能带自己的帽子，第一个人有n-1个可能性，那么剩下的n-1个人是这样的可能性，n-1有人带了1的帽子，那么就是递归到n-2的问题，因为第一个人和带了第一个人帽子的人都确定了，没人带就是n-1的问题。但是这里还要注意一个问题，就是会不会超出int的范围。
+public int findDerangement(int n) {
+        if(n<2) return 0;
+        long[] dp = new long[n+1];
+        dp[2]=1;
+        dp[1]=0;
+        for(int i=3;i<=n;i++){
+            dp[i]=(i-1)*(dp[i-1]+dp[i-2])%1000000007;
+        }
+        return (int)dp[n];
+    }
+
+259.range addition
+260.range addition ii
+给定的ops是空那么就返回m*n，因为出现的最多的是0，我们其实只是要找最靠近左上角的，因为总是从行列中的最小值进行更新。
+public int maxCount(int m, int n, int[][] ops) {
+        if (ops == null || ops.length == 0) {  
+        return m * n;  
+    }  
+  
+    int row = Integer.MAX_VALUE;  
+    int col = Integer.MAX_VALUE;  
+    for (int[] op : ops) {  
+        // op[0]是横坐标  
+        row = Math.min(row, op[0]);  
+        // op[1]是纵坐标  
+        col = Math.min(col, op[1]);  
+    }  
+    // row * col是左上角的元素个数  
+    return row * col;  
+    }
+
+261.next permutation
+规律还是比较难找的，但是找到了用代码实现就不那么难了。从后往前找第一个下降的数，标记，然后在从后往前找第一个比这个数大的数，交换这两个数。然后将第一个数之后的数字全部转置，就得到答案了。
+ public void nextPermutation(int[] nums) {
+        if(nums==null || nums.length==0){
+            return;
+        }
+       int firstSmall = -1;
+        int changeNumber = -1;
+       for(int i=nums.length-2;i>=0;i--){
+           if(nums[i]<nums[i+1]){
+               firstSmall = i;
+               break;
+           }
+       }
+        if(firstSmall==-1){
+            reverse(nums,0,nums.length-1);
+            return;
+        }
+        for(int i=nums.length-1;i>firstSmall;i--){
+            if(nums[i]>nums[firstSmall]){
+                changeNumber = i;
+                break;
+            }
+        }
+        
+        swap(nums,firstSmall,changeNumber);
+        reverse(nums,firstSmall+1,nums.length-1);
+    }
+    private void swap(int[]nums,int start,int end){
+        int temp = nums[end];
+        nums[end] = nums[start];
+        nums[start] = temp;
+    }
+    private void reverse(int[] nums, int start,int end){
+        while(start<end){
+            swap(nums,start++,end--);
+        }
+    }
+
+262.3sum closet
+根据前面的经验，涉及到几个数的和的问题我们就想到了two point的解法。但是这里我犯了一个错误，提到了closet我就想到了设置最小值然后更新，但是这里我们并不需要单独设置，我们可以在比较过程中不断替换。
+public int threeSumClosest(int[] nums, int target) {
+        if(nums==null || nums.length<3){
+            return 0;
+        }
+        Arrays.sort(nums);
+        int res = nums[0]+nums[1]+nums[nums.length-1];
+
+        for(int i=0;i<nums.length-2;i++){
+            int start = i+1;
+            int end = nums.length-1;
+            while(start<end){
+                int sum = nums[start]+nums[end]+nums[i];
+                if(sum>target){
+                    end--;
+                }else start++;
+                if(Math.abs(sum-target)<Math.abs(res-target)){
+                    res = sum;
+                }
+            }
+        }
+        return res;
+    }
+
+263.reverse nodes in k-group
+将链表分段，每k个进行一次reverse.
+public ListNode reverseKGroup(ListNode head, int k) {
+        ListNode dummy = new ListNode(0);
+        dummy.next = head;
+        
+        head = dummy;
+        while (true) {
+            head = reverseK(head, k);
+            if (head == null) {
+                break;
+            }
+        }
+        
+        return dummy.next;
+    }
+    
+    // head -> n1 -> n2 ... nk -> nk+1
+    // =>
+    // head -> nk -> nk-1 .. n1 -> nk+1
+    // return n1
+    public ListNode reverseK(ListNode head, int k) {
+        ListNode nk = head;
+        for (int i = 0; i < k; i++) {
+            if (nk == null) {
+                return null;
+            }
+            nk = nk.next;
+        }
+        
+        if (nk == null) {
+            return null;
+        }
+        
+        // reverse        
+        ListNode n1 = head.next;
+        ListNode nkplus = nk.next; 
+        
+        ListNode prev = null;
+        ListNode curt = n1;
+        while (curt != nkplus) {
+            ListNode temp = curt.next;
+            curt.next = prev;
+            prev = curt;
+            curt = temp;
+        }
+        
+        // connect
+        head.next = nk;
+        n1.next = nkplus;
+        return n1;
+    }
+
+264.jump game
+这道题是使用dp来解，我们设置int dp[i]来表示到达i的时候还剩下的最大的步数。
+public boolean canJump(int[] nums) {
+        if(nums==null || nums.length==0){
+            return true;
+        }
+        int[]dp = new int[nums.length];
+        for(int i=1;i<nums.length;i++){
+            dp[i] = Math.max(dp[i-1],nums[i-1])-1;
+            if(dp[i]<0) return false;
+        }
+        return dp[nums.length-1]>=0;
+    }
+
+265.jump game ii
+这道题是使用greedy的方法来解答。
+public int jump(int[] A) {
+        if(A==null || A.length==0){
+            return 0;
+        }
+        int n = A.length;
+        int ret = 0;
+        int last = 0;
+        int curr = 0;
+        for (int i = 0; i < n; ++i) {
+            if (i > last) {
+                last = curr;
+                ++ret;
+            }
+            curr = Math.max(curr, i+A[i]);
+        }
+
+        return ret;
+    }
+
+266.merge intervals
+这道题还是蛮tricky的，很像meeting room。第一，这道题如果只有一个值就返回这个集合本身，因为不需要判断重叠的问题。第二，对于集合中的数进行排序，直接比较其中需要比较的数。第三，这个数的判断每次都是加上之前的一个组，所以最后还要再把最新判断的值放进res中。
+public List<Interval> merge(List<Interval> intervals) {
+        List<Interval> res = new ArrayList<>();
+        if(intervals==null || intervals.size()<=1){
+            return intervals;
+        }
+        Collections.sort(intervals,(a,b)->a.start-b.start);
+        int start = intervals.get(0).start;
+        int end = intervals.get(0).end;
+        for(Interval interval:intervals){
+            if(interval.start<=end){
+                end = Math.max(end,interval.end);
+            }else{
+                res.add(new Interval(start,end));
+                start = interval.start;
+                end = interval.end;
+            }
+        }
+        res.add(new Interval(start,end));
+        return res;
+    }
+
+267.scramble string
+这道题并不是按照他的提示用dp来解答，而是用递归的方法解答。首先能够进行判断的就是用数组进行字符出现次数是否相同的判断。接下来就是对字符串的细分，这里分为两种情况，一个是正常分，一个是倒着分。
+ public boolean isScramble(String s1, String s2) {
+        if(s1==null || s2==null){
+            return false;
+        }
+        if(s1.equals(s2)) return true;
+        int len = s1.length();
+        int[] arr = new int[26];
+        for(int i=0;i<len;i++){
+            arr[s1.charAt(i)-'a']++;
+            arr[s2.charAt(i)-'a']--;
+        }
+        for(int i=0;i<26;i++){
+            if(arr[i]!=0) return false;
+        }
+        
+        for(int i=1;i<len;i++){
+            if(isScramble(s1.substring(0,i),s2.substring(0,i))
+              && isScramble(s1.substring(i),s2.substring(i))){
+                return true;
+            }
+            if(isScramble(s1.substring(0,i),s2.substring(len-i))&&
+              isScramble(s1.substring(i),s2.substring(0,len-i)))
+               return true;
+        }
+        return false;
+    }
+
+268.maximal rectangle
+比较难的题目，之前有一道相似的题目，求最大的正方形，那道题是用dp的方法来求的。
