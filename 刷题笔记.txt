@@ -616,7 +616,7 @@ public static int charToInt(char c) {
         return total;  
     }  
 
-13.regular expression matching
+
 
 14.evaluate reverse polish notation(stack)
 这是一道标准的使用stack来存储计算的题目，这应该是中序的表达，要练习前序和后续的题目，以及他们之间的转换。这道题有一个边界case的考虑，就是如果只有一个值的情况。我们应该在default的情况里直接将当前的值赋给results.
@@ -831,7 +831,25 @@ public int lengthOfLongestSubstring(String s) {
         return ans;
     }
 
-22.longest palindrome substring
+22.longest palindrome
+因为可以随便组合字符串中字符的顺序，所以相对来说不那么难。因为palindrome可以有两种构造形式，一个是全部是偶数，一个是中间夹杂了一个奇数，所以我们只需统计出奇数字符的次数就可以了。
+public int longestPalindrome(String s) {
+        if(s==null || s.length()==0) return 0;
+        int[] low = new int[26];
+        int[] high =  new int[26];
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)>='a'&&s.charAt(i)<='z'){
+                low[s.charAt(i)-'a']++;
+            }else high[s.charAt(i)-'A']++;
+        }
+        int odd = 0;
+        for(int i=0;i<26;i++){
+            if(low[i]%2==1) odd++;
+            if(high[i]%2==1) odd++;
+        }
+        if(odd==0) return s.length();
+        return s.length()-odd+1;
+    }
 
 23.palindrome number
 首先需要知道负数在不在考虑范围内，需要和interviwer沟通，然后就是将数字转换的时候需要防止数字溢出。我第一遍在做的时候将x直接进行运算，这样x的值就被变化了，就不能直接进行比较了。
@@ -933,6 +951,35 @@ public int removeElement(int[] nums, int val) {
 
 28.divide two integers（重看一遍）
 这道题用到了位运算。
+public int divide(int dividend, int divisor) {
+       if (divisor == 0) {
+             return dividend >= 0? Integer.MAX_VALUE : Integer.MIN_VALUE;
+        }
+        
+        if (dividend == 0) {
+            return 0;
+        }
+        
+        if (dividend == Integer.MIN_VALUE && divisor == -1) {
+            return Integer.MAX_VALUE;
+        }
+        
+        boolean isNegative = (dividend < 0 && divisor > 0) || 
+                             (dividend > 0 && divisor < 0);
+                             
+        long a = Math.abs((long)dividend);
+        long b = Math.abs((long)divisor);
+        int result = 0;
+        while(a >= b){
+            int shift = 0;
+            while(a >= (b << shift)){
+                shift++;
+            }
+            a -= b << (shift - 1);
+            result += 1 << (shift - 1);
+        }
+        return isNegative? -result: result;
+    }
 
 29.valid parentheses(stack)
 这是一道简单的栈的问题，但是在做的过程中出现了几个问题。第一是stack是否为空，我在判断的时候是如果发现了右边比配的字符就取出栈中最上面的，但是我忘了判断此时栈是否为空，isEmpty()。第二个问题是最后return的值，我应该考虑到只有当其中的值全部被取出去了才是true,因为如果原来string只有一个{,那么只存进去就不为空。
@@ -1045,6 +1092,50 @@ public void rotate(int[] nums, int k) {
     }
 
 32.remove invalid parentheses
+public List<String> removeInvalidParentheses(String s) {
+        
+        
+        List<String> results = new ArrayList<String>();
+        if(s == null || s.length() == 0){
+            results.add(s);
+            return results;
+        }
+        boolean found = false;
+        Set<String> visited = new HashSet<String>();
+        Queue<String> queue = new LinkedList<String>();
+        queue.offer(s);
+        visited.add(s);
+        
+        while(!queue.isEmpty()){
+            String t = queue.poll();
+            if(isValid(t)){
+                results.add(t);
+                found = true;
+            }
+            
+            if(found == true) continue;
+            
+            for(int i=0;i<t.length();i++){
+                if(t.charAt(i)!='(' && t.charAt(i)!=')') continue;
+                
+                String str = t.substring(0,i) + t.substring(i+1);
+                if(!visited.contains(str)){
+                    queue.offer(str);
+                    visited.add(str);
+                }
+            }
+        }
+        return results;
+    }
+    
+    private boolean isValid(String s){
+        int cnt = 0;
+        for(int i=0;i<s.length();i++){
+            if(s.charAt(i)=='(') cnt++;
+            if(s.charAt(i)==')' && cnt-- == 0) return false;
+        }
+        return cnt == 0;
+    }
 
 33.swap nodes in pairs(linkedlist)
 这道题也是linkedlist的经典题目，关于节点交换的题目都需要知道要交换的点的前一个节点，有些需要知道交换节点的后一个节点。这道题的难点在于要想到每两个交换的节点都是在变化的，所以我们申明指针指向这两个节点和他们的前节点的时候需要在循环中。
@@ -1071,6 +1162,45 @@ public ListNode swapPairs(ListNode head) {
     }
 
 34.search in rotated sorted array(binary tree)
+public int search(int[] A, int target) {
+        if (A == null || A.length == 0) {
+            return -1;
+        }
+
+        int start = 0;
+        int end = A.length - 1;
+        int mid;
+        
+        while (start + 1 < end) {
+            mid = start + (end - start) / 2;
+            if (A[mid] == target) {
+                return mid;
+            }
+            if (A[start] < A[mid]) {
+                // situation 1, red line
+                if (A[start] <= target && target <= A[mid]) {
+                    end = mid;
+                } else {
+                    start = mid;
+                }
+            } else {
+                // situation 2, green line
+                if (A[mid] <= target && target <= A[end]) {
+                    start = mid;
+                } else {
+                    end = mid;
+                }
+            }
+        } // while
+        
+        if (A[start] == target) {
+            return start;
+        }
+        if (A[end] == target) {
+            return end;
+        }
+        return -1;
+}
 
 35.zigzag conversion(string)
 按照一定规律排列读取string,就是将规律装换成数学表达式。这道题有几个注意的点，第一个是因为最后字符串的读取是换了一个方式，所以我们需要新建一个stringbuilder，将字符串读取添加。第二个问题就是字符读取过程是一个反复的过程，向下到低端就要反弹回去，所以要使用两个循环，一个是向下循环，一个是向上循环。
@@ -1200,6 +1330,28 @@ public int maxArea(int[] height) {
     }
 
 40.combination sum
+ public List<List<Integer>> combinationSum(int[] candidates, int target) {
+        List<List<Integer>> res = new ArrayList<>();
+        if(candidates==null || candidates.length==0) return res;
+        Arrays.sort(candidates);
+        helper(res,new ArrayList<>(),target,0,candidates);
+        return res;
+    }
+    private void helper(List<List<Integer>> res, List<Integer> list, int target, int startIndex, int[]candidates){
+        if(target==0){
+            res.add(new ArrayList<Integer>(list));
+            return;
+        }
+        for(int i=startIndex;i<candidates.length;i++){
+            if(target<candidates[i]){
+                break;
+            }
+            list.add(candidates[i]);
+            helper(res,list,target-candidates[i],i,candidates);
+            list.remove(list.size()-1);
+        }
+        
+    }
 
 41.combination
 这道题是求1到n个数，每次只去其中的k个数，求combination。也是一道dfs的题目，跳出的条件就是com.size()==k,只是取数的范围是1到n，不是从0开始取。
@@ -1224,6 +1376,31 @@ public List<List<Integer>> combine(int n, int k) {
     }
 
 42. combination sum ii
+public List<List<Integer>> combinationSum2(int[] candidates, int target) {
+        List<List<Integer>> res = new ArrayList<>();
+        if(candidates==null || candidates.length==0){
+            return res;
+        }
+        Arrays.sort(candidates);
+        helper(res, new ArrayList<>(), target, candidates,0);
+        return res;
+    }
+    
+    private void helper(List<List<Integer>> res, List<Integer> list, int target, int[] candidates, int startIndex){
+        if(target==0){
+            res.add(new ArrayList<>(list));
+            return;
+        }
+        for(int i=startIndex;i<candidates.length;i++){
+            if(i!=startIndex && candidates[i]==candidates[i-1]){
+                continue;
+            }
+            if(target<candidates[i]) break;
+            list.add(candidates[i]);
+            helper(res,list,target-candidates[i],candidates,i+1);
+            list.remove(list.size()-1);
+        }
+    }
 43. factor combinations	
 这道题其实也是dfs的应用，其实就是回溯法，一开始我们就可以像计算和一样，每一次将应该放入的数字放进list中，然后target就变成target/i,结果中我们需要进行判断，当target为1的时候表示结束了但是有一种情况，就是这个数自己，所以我们需要在判断中再加一个判断，就是com中是否有数字，如果有就把数放进results。
 public List<List<Integer>> getFactors(int n) {
@@ -1961,6 +2138,51 @@ public String reverseWords(String s) {
     }
 
 71.sort list
+merge sort解决问题。
+private ListNode findMiddle(ListNode head) {
+        ListNode slow = head, fast = head.next;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }    
+
+    private ListNode merge(ListNode head1, ListNode head2) {
+        ListNode dummy = new ListNode(0);
+        ListNode tail = dummy;
+        while (head1 != null && head2 != null) {
+            if (head1.val < head2.val) {
+                tail.next = head1;
+                head1 = head1.next;
+            } else {
+                tail.next = head2;
+                head2 = head2.next;
+            }
+            tail = tail.next;
+        }
+        if (head1 != null) {
+            tail.next = head1;
+        } else {
+            tail.next = head2;
+        }
+
+        return dummy.next;
+    }
+
+    public ListNode sortList(ListNode head) {
+        if (head == null || head.next == null) {
+            return head;
+        }
+
+        ListNode mid = findMiddle(head);
+
+        ListNode right = sortList(mid.next);
+        mid.next = null;
+        ListNode left = sortList(head);
+
+        return merge(left, right);
+    }
 
 72.intersection of two arrays 
 因为只是将出现的共同部分的其中一个放进最后的数组中，所以我想到了使用hashset来存储数据。有几个问题需要注意，就是最后的结果的数组的大小要是正好的，不能有空余空间。hashset.iterator遍历返回的是对象，要进行类型转换。
@@ -3956,6 +4178,59 @@ public String minWindow(String s, String t) {
     }
 
 139.reorder list
+这道题就是考察find middle, reverse 和merge的应用。
+private ListNode reverse(ListNode head) {
+        ListNode newHead = null;
+        while (head != null) {
+            ListNode temp = head.next;
+            head.next = newHead;
+            newHead = head;
+            head = temp;
+        }
+        return newHead;
+    }
+
+    private void merge(ListNode head1, ListNode head2) {
+        int index = 0;
+        ListNode dummy = new ListNode(0);
+        while (head1 != null && head2 != null) {
+            if (index % 2 == 0) {
+                dummy.next = head1;
+                head1 = head1.next;
+            } else {
+                dummy.next = head2;
+                head2 = head2.next;
+            }
+            dummy = dummy.next;
+            index ++;
+        }
+        if (head1 != null) {
+            dummy.next = head1;
+        } else {
+            dummy.next = head2;
+        }
+    }
+
+    private ListNode findMiddle(ListNode head) {
+        ListNode slow = head, fast = head.next;
+        while (fast != null && fast.next != null) {
+            fast = fast.next.next;
+            slow = slow.next;
+        }
+        return slow;
+    }
+
+    public void reorderList(ListNode head) {
+        if (head == null || head.next == null) {
+            return;
+        }
+
+        ListNode mid = findMiddle(head);
+        ListNode tail = reverse(mid.next);
+        mid.next = null;
+
+        merge(head, tail);
+    }
 
 140.two sum ii
 相比于sum two 来说，数组是按照升序排列的。因为题目中确定了是exactly one solution,所以就是找到即输出。
@@ -5582,6 +5857,17 @@ class MyQueue {
  */
 
 199.number of digit one
+一道纯数学计算题。
+public int countDigitOne(int n) {
+        int res = 0;
+        for(long m=1;m<=n;m*=10){
+            long a = n/m;
+            long b = n%m;
+            res += (a+8)/10 *m;
+            if(a%10==1) res +=b+1;
+        }
+        return res;
+    }
 
 200.palindrome linked list
 因为这道题规定了空间复杂度为O(1),要不然有很多种方法，可以直接将整个链表反转，然后和原来的链表一起从头开始遍历比较。还可以将链表读取到一个数组中，然后进行比较。
@@ -5671,7 +5957,43 @@ public int addDigits(int num) {
 return (num-1)%9+1;
 
 203.number of islands ii
-
+这道题是用union-find的方法求解，和number of islands不一样。
+int[][] directions = {{0,1},{1,0},{0,-1},{-1,0}};
+    public List<Integer> numIslands2(int m, int n, int[][] positions) {
+        List<Integer> res = new ArrayList<>();
+        if(m<=0 || n<=0){
+            return res;
+        }
+        
+        int count = 0;
+        int[] roots = new int[n*m];
+        Arrays.fill(roots,-1);
+        for(int[] pair:positions){
+            int position = n * pair[0]+pair[1];
+            roots[position]=position;
+            count++;
+            for(int[] dir: directions){
+                int x = pair[0]+dir[0];
+                int y = pair[1]+dir[1];
+                int curPos = n * x + y;
+                if(x<0 || x>=m || y<0 || y>=n || roots[curPos]==-1) continue;
+                int anIsland = find(roots,curPos);
+                if(position!=anIsland){
+                    roots[position]=anIsland;
+                    position = anIsland;
+                    count--;
+                }
+            }
+            res.add(count);
+        }
+        return res;
+    }
+    private int find(int[] roots, int i){
+        while(roots[i]!=i){
+            i = roots[i];
+        }
+        return i;
+    }
 
 204.number of connected components in an undirected graph
 这是一道标准的使用union-find来解决的题目。
@@ -7212,3 +7534,274 @@ public List<Interval> merge(List<Interval> intervals) {
 
 268.maximal rectangle
 比较难的题目，之前有一道相似的题目，求最大的正方形，那道题是用dp的方法来求的。
+
+
+269.sudoku solver
+public void solveSudoku(char[][] board){
+        solve(board);
+    }
+
+    public boolean solve(char[][] board) {
+        for(int i = 0; i < 9; i++) {
+            for(int j = 0; j < 9; j++){
+                if(board[i][j] != '.'){
+                    continue;
+                }
+                for(int k = 1; k <= 9; k++){
+                    board[i][j] = (char) (k + '0');
+                    if (isValid(board, i, j) && solve(board)){
+                        return true;
+                    }
+                    board[i][j] = '.';
+                }
+                return false;
+            }
+        }
+        return true;
+    }
+    
+    
+     public boolean isValid(char[][] board, int a, int b){
+        Set<Character> contained = new HashSet<Character>();
+        for(int j=0;j<9;j++){
+            if(contained.contains(board[a][j])) return false;
+            if(board[a][j]>'0' && board[a][j]<='9')
+                contained.add(board[a][j]);
+        }
+            
+        
+    
+        contained = new HashSet<Character>();
+        for(int j=0;j<9;j++){
+            if (contained.contains(board[j][b])) {
+                return false;
+            }
+            if (board[j][b]>'0' && board[j][b]<='9') {
+                contained.add(board[j][b]);
+            }
+        }
+        
+    
+        contained = new HashSet<Character>();
+        for (int m = 0; m < 3; m++) {
+            for (int n = 0; n < 3; n++){
+                int x = a / 3 * 3 + m, y = b / 3 * 3 + n;
+                if (contained.contains(board[x][y])) {
+                    return false;
+                }
+                if (board[x][y] > '0' && board[x][y] <= '9') {
+                        contained.add(board[x][y]);
+                }
+            } 
+        }
+    
+        return true;
+    }
+
+270.longest palindrome substring
+private int lo,max;
+    public String longestPalindrome(String s) {
+        int len = s.length();
+        if(len<2) return s;
+        for(int i=0;i<len-1;i++){
+            extendPalindrome(s,i,i);
+            extendPalindrome(s,i,i+1);
+        }
+        return s.substring(lo,lo+max);
+    }
+    
+    private void extendPalindrome(String s,int j,int k){
+        while(j>=0 && k<s.length()&&s.charAt(j)==s.charAt(k)){
+            j--;
+            k++;
+        }
+        if(max<k-j-1){
+            lo = j+1;
+            max = k-j-1;
+        }
+    }
+
+271.spiral matrix
+就是暴力求解，只是要注意在行和列往回走的过程中要判断begin<=end.
+public List<Integer> spiralOrder(int[][] matrix) {
+        List<Integer> res = new ArrayList<>();
+        if(matrix==null || matrix.length==0 || matrix[0].length==0){
+            return res;
+        }
+        int rowEnd = matrix.length-1;
+        int colEnd = matrix[0].length-1;
+        int rowBegin=0;
+        int colBegin=0;
+       
+        while(rowBegin<=rowEnd && colBegin<=colEnd){
+            for(int i=colBegin;i<=colEnd;i++){
+                res.add(matrix[rowBegin][i]);
+            }
+            rowBegin++;
+            for(int i=rowBegin;i<=rowEnd;i++){
+                res.add(matrix[i][colEnd]);
+            }
+            colEnd--;
+            if(rowBegin <= rowEnd){
+                for(int i=colEnd;i>=colBegin;i--){
+                     res.add(matrix[rowEnd][i]);
+                }
+            }
+            
+            rowEnd--;
+            if(colBegin<=colEnd){
+                for(int i=rowEnd;i>=rowBegin;i--){
+                res.add(matrix[i][colBegin]);
+            }
+            }
+            
+            colBegin++;
+        }
+                
+            
+        return res;
+    }
+
+272.spiral matrix ii
+和上一题的遍历没区别，只是多了一个变量，每一个操作都是加一就可以了。
+public int[][] generateMatrix(int n) {
+        int[][] res = new int[n][n];
+        int number = 1;
+        int rowBegin = 0;
+        int rowEnd = n-1;
+        int colBegin = 0;
+        int colEnd = n-1;
+        while(rowBegin<=rowEnd && colBegin <= colEnd){
+            for(int i=colBegin;i<=colEnd;i++){
+                res[rowBegin][i] = number++;
+            }
+            rowBegin++;
+            for(int i=rowBegin;i<=rowEnd;i++){
+                res[i][colEnd] = number++;
+            }
+            colEnd--;
+            if(rowBegin<=rowEnd){
+                for(int i=colEnd;i>=colBegin;i--){
+                    res[rowEnd][i]=number++;
+                }
+            }
+            rowEnd--;
+            if(colBegin<=colEnd){
+                for(int i=rowEnd;i>=rowBegin;i--){
+                    res[i][colBegin]=number++;
+                }
+            }
+            colBegin++;
+        }
+        return res;
+    }
+
+273.sqrt(x)
+第一是要注意使用long，防止溢出。第二是high>=low。
+public int mySqrt(int x) {
+         long high = (x / 2) + 1;  
+    long low = 0;  
+    while (high >= low) {  
+        long mid = (high + low) / 2;  
+        if (mid * mid == x)  
+            return (int)mid;  
+        else if (mid * mid > x)  
+            high = mid - 1;  
+        else  
+            low = mid + 1;  
+    }  
+    return (int)high;  
+    }
+
+274.rotate list
+比较简单的题目，缕清思路和节点之间的关系还是很快可以做出来的。
+public ListNode rotateRight(ListNode head, int k) {
+        if(head==null || head.next==null){
+            return head;
+        }
+        int len = 1;
+        ListNode index = head;
+        while(index.next!=null){
+            index = index.next;
+            len++;
+        }
+        index.next = head;
+        for(int i=1;i<len-k%len;i++){
+            head = head.next;
+        }
+        ListNode res = head.next;
+        head.next = null;
+        return res;
+    }
+
+275.permutation sequence
+因为其存在规律性，并不需要将整个permutation列出来然后取其中的第k个，第一位有n个选择，那么我们知道他存在的index就是k/fact[i-1],此时需要将k%fact[i-1]，就是说第一位我们确定了在第几个位置，然后第二个数字的相对位置是k%fact[i-1]，以此类推。
+public String getPermutation(int n, int k) {
+        List<Integer> res = new ArrayList<>();
+        for(int i=1;i<=n;i++){
+            res.add(i);
+        }
+        int[] fact = new int[n];
+        fact[0]=1;
+        for(int i=1;i<n;i++){
+            fact[i]=i*fact[i-1];
+        }
+        k = k-1;
+        StringBuilder sb = new StringBuilder();
+        for(int i=n;i>0;i--){
+            int index = k/fact[i-1];
+            k = k%fact[i-1];
+            sb.append(res.get(index));
+            res.remove(index);
+        }
+        return sb.toString();
+    }
+
+276.set matrix zeroes
+如果一个元素是0，那么这个元素所在的行和列都设为0.我们先遍历一遍，将有0的那个点所在的行和列的第一个元素设置为0，如果是第一行或者第一列有0，我们将其对应的boolean变量设置为true。
+public void setZeroes(int[][] matrix) {
+        if(matrix==null || matrix.length==0 || matrix[0].length==0){
+            return;
+        }
+        boolean row = false;
+        boolean col = false;
+        int m = matrix.length;
+        int n= matrix[0].length;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                if(matrix[i][j]==0){
+                    matrix[0][j]=0;
+                    matrix[i][0]=0;
+                    if(i==0) row=true;
+                    if(j==0) col=true;
+                }
+            }
+        }
+        for(int i=1;i<m;i++){
+            if(matrix[i][0]==0){
+                for(int j=1;j<n;j++){
+                    matrix[i][j]=0;
+                }
+            }
+        }
+        for(int i=1;i<n;i++){
+            if(matrix[0][i]==0){
+                for(int j=1;j<m;j++){
+                    matrix[j][i]=0;
+                }
+            }
+        }
+        if(row){
+            for(int i=0;i<n;i++){
+                matrix[0][i]=0;
+            }
+        }
+        if(col){
+            for(int i=0;i<m;i++){
+                matrix[i][0]=0;
+            }
+        }
+    }
+277.search a 2D matrix
+
+278.
