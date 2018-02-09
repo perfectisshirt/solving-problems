@@ -1162,6 +1162,7 @@ public ListNode swapPairs(ListNode head) {
     }
 
 34.search in rotated sorted array(binary tree)
+判断nums[start]<=target&&target<=nums[mid]这个等号是必须要有的，如果没有就会出现像[1,3,5],target=1,这样的test case过不了，因为边界条件没有考虑到。
 public int search(int[] A, int target) {
         if (A == null || A.length == 0) {
             return -1;
@@ -1263,7 +1264,7 @@ public int myAtoi(String str) {
     }
 
 37.container with most water
-这道题一开始我理解错了题意，两条垂直的线分别代表的是两个高度，要盛水的话肯定是按短的算，并不是计算两根线和x轴组成的图形的面积。这道题可以用双指针的思想来解决，分别从头和尾开始向中间进发。因为end-start无论是左边往右走还是右边往左走都是减少的，所以不可以不用考虑。但是高度都是短的提取，所以都是要紧着短的来，目的是为了找到更短的。
+这道题一开始我理解错了题意，两条垂直的线分别代表的是两个高度，要盛水的话肯定是按短的算，并不是计算两根线和x轴组成的图形的面积。这道题可以用双指针的思想来解决，分别从头和尾开始向中间进发。因为end-start无论是左边往右走还是右边往左走都是减少的，所以不可以不用考虑。但是高度都是短的提取，因为用木桶盛水能乘多少水是看短的那个木头。所以都是要紧着短的来，目的是为了找到更短的。
 public int maxArea(int[] height) {
         
         int max = Integer.MIN_VALUE;
@@ -4859,6 +4860,7 @@ public int calculateMinimumHP(int[][] dungeon) {
     }
 
 163.edit distance
+这是一道dp的题目，还是蛮重要的。首先我们先构造一个二维数组，初始化的过程就是添加字符的过程，如果word1.charAt(i-1)==word2.charAt(j-1),那么就是不用进行操作。如果不一样，进行添加的操作就是dp[i][j]=dp[i][j-1]+1, 删除就是dp[i-1][j]+1, 修改就是dp[i-1][j-1]+1.三者最后取最小值来表示最小的移动步数。
  public int minDistance(String word1, String word2) {
         if(word1.equals(word2)){
             return 0;
@@ -7599,6 +7601,7 @@ public void solveSudoku(char[][] board){
     }
 
 270.longest palindrome substring
+这里的k-j-1是因为跳出循环的时候j和k指向的是不能构成palindrome的字符。
 private int lo,max;
     public String longestPalindrome(String s) {
         int len = s.length();
@@ -7621,6 +7624,27 @@ private int lo,max;
         }
     }
 
+还有一种dp的方法。这里设置dp数组是表示i-j是不是palindrome.这里的j-i<=2是要确定不会超过边界，也就是说这是像aba这种情况就不要向中间靠拢了，因为这种情况肯定是palindrome.
+public String longestPalindrome(String s) {
+        if(s==null || s.length()==0){
+            return s;
+        }
+        boolean[][] dp =  new boolean[s.length()][s.length()];
+        String res = "";
+        int max = 0;
+        for(int j=0;j<s.length();j++){
+            for(int i=0;i<=j;i++){
+                dp[i][j] = s.charAt(i)==s.charAt(j) && ((j-i<=2)||dp[i+1][j-1]);
+                if(dp[i][j]){
+                    if(j-i+1>max){
+                        max = j-i+1;
+                        res = s.substring(i,j+1);
+                    }
+                }
+            }
+        }
+        return res;
+    }
 271.spiral matrix
 就是暴力求解，只是要注意在行和列往回走的过程中要判断begin<=end.
 public List<Integer> spiralOrder(int[][] matrix) {
@@ -8442,4 +8466,329 @@ String[] less20 = {"","One","Two","Three","Four","Five","Six","Seven","Eight","N
         }
     }
 
-305
+305.maximum size subarray sum equals k
+建立累计和的方法有一个问题就是只能从头开始到自己的位置，所以我们使用hashmap来辅助计算相对位置。
+public int maxSubArrayLen(int[] nums, int k) {
+        if(nums==null || nums.length==0){
+            return 0;
+        }
+        int res = 0;
+        HashMap<Integer,Integer> map = new HashMap<>();
+        map.put(0,-1);
+        for(int i=1;i<nums.length;i++){
+            nums[i] += nums[i-1];
+        }
+        for(int i=0;i<nums.length;i++){
+            if(map.containsKey(nums[i]-k)){
+                res = Math.max(res,i-map.get(nums[i]-k));
+            }
+            if(!map.containsKey(nums[i])){
+                map.put(nums[i],i);
+            }
+        }
+        
+        return res;
+    }
+
+306.trapping rain water
+这道题可以使用双指针的方法解答，这让我对双指针有了新的认识，并不是在数组排序找element的时候用到。这道题就是将这个池子分成了左和右，每一边都是由height[left] and leftmax 和height[right] and rightmax来记录能不能蓄水。因为我们知道能蓄多少水是根据短的那边决定的。
+public int trap(int[] height) {
+        int left = 0;
+        int right = height.length-1;
+        int leftMax = 0;
+        int rightMax = 0;
+        int res = 0;
+        while(left<right){
+            if(height[left]<height[right]){
+                leftMax = Math.max(leftMax,height[left]);
+                res += leftMax - height[left];
+                left++;
+            }else{
+                rightMax = Math.max(rightMax,height[right]);
+                res += rightMax - height[right];
+                right--;
+            }
+        }
+        return res;
+    }
+
+307.walls and gates
+这道题可以使用bfs也可以使用dfs，这道题很像之前的一道计算距离的题目，这道题就是从0这个门开始。
+public void wallsAndGates(int[][] rooms) {
+        for(int i=0;i<rooms.length;i++){
+            for(int j=0;j<rooms[0].length;j++){
+                if(rooms[i][j]==0){
+                    dfs(rooms,i,j,0);
+                }
+            }
+        }
+    }
+    private void dfs(int[][] rooms, int i, int j,int distance){
+        if(i<0 || i>= rooms.length || j<0 || j>=rooms[0].length||rooms[i][j]<distance) return;
+        rooms[i][j]=distance;
+        dfs(rooms,i+1,j,distance+1);
+        dfs(rooms,i-1,j,distance+1);
+        dfs(rooms,i,j+1,distance+1);
+        dfs(rooms,i,j-1,distance+1);
+    }
+
+308.shortest distance from all buildings
+从0出发判断的时候还要判断能不能到达所有的1，所以我们从1出发。我们设置int[][] dist来记录从每一个点出发到矩阵中点的距离，int[][] nums, nums[i][j]==1就表示从一个楼出发能够到达的点，当nums[i][j]==buildingNum的时候就表示这个点是能够到达所有楼的点。
+public int shortestDistance(int[][] grid) {
+        if(grid==null || grid.length==0 || grid[0].length==0){
+            return -1;
+        }
+        int m = grid.length;
+        int n = grid[0].length;
+        int [][] dist = new int[m][n];
+        int [][] nums = new int[m][n];
+        int buildingNum = 0;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                if(grid[i][j]==1){
+                    buildingNum++;
+                    bfs(grid,i,j,dist,nums);
+                }
+            }
+        }
+        int res = Integer.MAX_VALUE;
+        for(int i=0;i<m;i++){
+            for(int j=0;j<n;j++){
+                if(grid[i][j]==0 && dist[i][j]!=0&&nums[i][j]==buildingNum){
+                    res = Math.min(res,dist[i][j]);
+                }
+            }
+        }
+        return res == Integer.MAX_VALUE?-1:res;
+    }
+    private void bfs(int[][] grid, int row, int col, int[][]dist, int[][] nums){
+        int m = grid.length;
+        int n = grid[0].length;
+        Queue<int[]> queue = new LinkedList<>();
+        queue.offer(new int[]{row,col});
+        int[][] dirs = {{1,0},{-1,0},{0,1},{0,-1}};
+        boolean[][] visited = new boolean[m][n];
+        int distance = 0;
+        while(!queue.isEmpty()){
+            distance++;
+            int size = queue.size();
+            for(int i=0;i<size;i++){
+                int[] cur = queue.poll();
+                for(int k=0;k<dirs.length;k++){
+                    int x = cur[0]+dirs[k][0];
+                    int y = cur[1]+dirs[k][1];
+                    if(x>=0&&x<m&&y>=0&&y<n&&grid[x][y]==0&&!visited[x][y]){
+                        visited[x][y]=true;
+                        dist[x][y] += distance;
+                        nums[x][y]++;
+                        queue.offer(new int[]{x,y});
+                    }
+                }
+            }
+        }
+    }
+
+309.reconstruct itinerary 
+HashMap<String,PriorityQueue<String>> map;
+    List<String> res;
+    public List<String> findItinerary(String[][] tickets) {
+        map = new HashMap<>();
+        res = new ArrayList<>();
+        for(String[] str: tickets){
+            map.computeIfAbsent(str[0],k->new PriorityQueue<String>()).add(str[1]);
+        }
+        helper("JFK");
+        return res;
+    }
+    private void helper(String airport){
+        while(map.containsKey(airport) && !map.get(airport).isEmpty()){
+            helper(map.get(airport).poll());
+        }
+        res.add(0,airport);
+    }
+310.add two numbers ii
+有一种方法就是使用stack，将两个链表分别放到两个stack中，之后的计算就和add two numbers一样了。
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        Stack<Integer> stack1 = new Stack<>();
+        Stack<Integer> stack2 = new Stack<>();
+        while(l1!=null){
+            stack1.push(l1.val);
+            l1 = l1.next;
+        }
+        while(l2!=null){
+            stack2.push(l2.val);
+            l2 = l2.next;
+        }
+        int carry = 0;
+        ListNode dummy = new ListNode(0);
+        while(!stack1.isEmpty() && !stack2.isEmpty()){
+            int value = stack1.pop()+stack2.pop()+carry;
+            carry = value /10;
+            value %= 10;
+            ListNode newNode = new ListNode(value);
+            newNode.next = dummy.next;
+            dummy.next = newNode;
+        }
+        while(!stack1.isEmpty()){
+            int value = stack1.pop()+carry;
+            carry = value /10;
+            value %= 10;
+            ListNode newNode = new ListNode(value);
+            newNode.next = dummy.next;
+            dummy.next = newNode;
+        }
+        while(!stack2.isEmpty()){
+            int value = stack2.pop()+carry;
+            carry = value /10;
+            value %= 10;
+            ListNode newNode = new ListNode(value);
+            newNode.next = dummy.next;
+            dummy.next = newNode;
+        }
+        if(carry!=0){
+            ListNode newNode = new ListNode(carry);
+            newNode.next = dummy.next;
+            dummy.next = newNode;
+        }
+        return dummy.next;
+    }
+如果我们不使用stack，我们可以使用栈空间，也就是recursion.我们在使用recursion进行计算的时候，当前的值对后续的值如果会产生影响，我们就会使用post和cur这类的过渡来进行两者的比较。
+public ListNode addTwoNumbers(ListNode l1, ListNode l2) {
+        int len1 = getLength(l1);
+        int len2 = getLength(l2);
+        ListNode head = new ListNode(0);
+
+        if (len1 < len2){
+            head.next = helper(l2, l1, len2-len1);
+        }else{
+            head.next = helper(l1, l2, len1-len2);
+        }
+        if(head.next.val > 9){
+            head.next.val = head.next.val%10;
+            head.val += 1;
+            return head;
+        }
+
+        return head.next;
+
+    }
+
+    public int getLength(ListNode node){
+        int count = 0;
+        while(node != null){
+            count++;
+            node = node.next;
+        }
+        return count;
+    }
+
+    public ListNode helper(ListNode l1, ListNode l2, int offset){
+        if (l1 == null){
+            return null;
+        }
+        ListNode result = null;
+        ListNode post = null;
+        if (offset == 0){
+            result = new ListNode(l1.val + l2.val);
+            post = helper(l1.next, l2.next, 0);
+        }else{
+            result = new ListNode(l1.val);
+            post = helper(l1.next, l2, offset-1);
+        }
+
+        if(post != null && post.val > 9){
+            result.val += 1;
+            post.val = post.val%10;
+        }
+        result.next = post;
+        return result;
+
+
+    }
+311.logest common prefix
+给定的这个数组的最大的共同前缀，就说明这个数组中的所有的单词都是有共同前缀的，只是要求最长的。
+public String longestCommonPrefix(String[] strs) {
+        if(strs==null || strs.length==0){
+            return new String();
+        }
+        String prefix = strs[0];
+        for(int i=1;i<strs.length;i++){
+            int j=0;
+            while(j<prefix.length() && j<strs[i].length() && strs[i].charAt(j)==prefix.charAt(j)){
+                j++;
+            }
+            if(j==0) return "";
+            prefix = prefix.substring(0,j); 
+        }
+        return prefix;
+    }
+
+312.count and say
+这是一道实现题，我们用i来记录上一层是什么字符串，然后每一次都是读这一层字符串，定义一个count读取字符的个数，然后用stringbuilder来将读取的字符放进来。
+public String countAndSay(int n) {
+        String res = "1";
+        int i=1;
+        while(i<n){
+            StringBuilder sb = new StringBuilder();
+            int count = 0;
+            char c = res.charAt(0);
+            for(int j=0;j<=res.length();j++){
+                if(j!=res.length() && res.charAt(j)==c){
+                    count++;
+                }else{
+                    sb.append(count);
+                    sb.append(c);
+                    if(j!=res.length()){
+                        count=1;
+                        c = res.charAt(j);
+                    }
+                }
+            }
+             res = sb.toString();
+             i++;
+        }
+        return res;
+    }
+
+313.group anagrams
+we build  a hash map to store string and its index in res. Of course, we have to sort every string in string array. Integer is been used to store index of string in res.
+public List<List<String>> groupAnagrams(String[] strs) {
+        List<List<String>> res = new ArrayList<>();
+        if(strs==null || strs.length==0){
+            return res;
+        }
+        HashMap<String,Integer> map = new HashMap<>();
+        for(String str:strs){
+            char[] ch = str.toCharArray();
+            Arrays.sort(ch);
+            String s = new String(ch);
+            if(map.containsKey(s)){
+                List<String> list = res.get(map.get(s));
+                list.add(str);
+            }else{
+                List<String> list = new ArrayList<>();
+                list.add(str);
+                map.put(s,res.size());
+                res.add(list);
+            }
+        }
+        return res;
+    }
+
+314.largest rectangle in histogram
+一开始看到这个题就想到了raining water的题目，但是发现并不是这么回事。我们这里使用stack来存储递增数列，知道当前的height[i]<height[stack.peek()];将数拿出来，直到stack当前的peek是小于height[i]，那么start的位置就应该stack.peek(),所以area应该是hei*(i-start-1)。
+public int largestRectangleArea(int[] height) {
+        Stack<Integer> stack = new Stack<>();
+        int res = 0;
+        for(int i=0;i<=height.length;i++){
+            int h = i==height.length?0:height[i];
+            while(!stack.isEmpty()&&h<height[stack.peek()]){
+                int hei = height[stack.pop()];
+                int start = stack.isEmpty()?-1:stack.peek();
+                int area = hei * (i-start-1);
+                res = Math.max(res,area);
+            }
+            stack.push(i);
+        }
+        return res;
+    }
