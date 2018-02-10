@@ -4694,7 +4694,7 @@ public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {
     }
 
 156.validate binary search tree
-因为是but，所以存在left.val<root.val<right.val,这是题目的意思。可以根据这个要求进行解答。之所以要使用long.max_value,是为了防止当前的结点的值是int型的边界值。
+因为是but，所以存在left.val<root.val<right.val,这是题目的意思。可以根据这个要求进行解答。之所以要使用long.max_value,是为了防止当前的结点的值是int型的边界值,like the root value is Integer.MAX_VALUE;
 public boolean isValidBST(TreeNode root) {
         if (root == null) {
             return true;
@@ -8791,4 +8791,88 @@ public int largestRectangleArea(int[] height) {
             stack.push(i);
         }
         return res;
+    }
+
+315.maximum gap
+比较tricky的方法就是用build-in的排序来解决，但是题目应该考察的就是排序算法。因为时间复杂度和空间复杂度是O(n),所以只能是桶排。我们之前用的桶排都是容量为1，但是这道题我们需要确定桶的容量。
+public int maximumGap(int[] nums) {
+        if(nums==null || nums.length<2){
+            return 0;
+        }
+        Arrays.sort(nums);
+        int res = Integer.MIN_VALUE;
+        for(int i=0;i<nums.length-1;i++){
+            res = Math.max(res,nums[i+1]-nums[i]);
+        }
+        return res;
+    }
+一下就是桶排序。最大的差值肯定不是在同一个桶中，所以肯定是一个桶的最小值和另一个桶的最大值之间的差值。
+ public int maximumGap(int[] nums) {
+        if(nums==null || nums.length<2){
+            return 0;
+        }
+        int max = nums[0];
+        int min = nums[0];
+        for(int num:nums){
+            max = Math.max(num,max);
+            min = Math.min(num,min);
+        }
+        int len = nums.length;
+        int step = (int)Math.ceil((double)(max-min)/(len-1));
+        int[] bucketMin = new int[len-1];
+        int[] bucketMax = new int[len-1];
+        Arrays.fill(bucketMin,Integer.MAX_VALUE);
+        Arrays.fill(bucketMax,Integer.MIN_VALUE);
+        for(int num:nums){
+            if(num==min || num==max) continue;
+            int bucket = (num-min)/step;
+            bucketMin[bucket] = Math.min(num,bucketMin[bucket]);
+            bucketMax[bucket] = Math.max(num,bucketMax[bucket]);
+        }
+        
+        int pre = min;
+        int res = 0;
+        for(int i=0;i<len-1;i++){
+            if(bucketMin[i]==Integer.MAX_VALUE || bucketMax[i]==Integer.MIN_VALUE) continue;
+            res = Math.max(res,bucketMin[i]-pre);
+            pre = bucketMax[i];
+        }
+        res = Math.max(res,max-pre);
+        return res;
+    }
+
+316.binary tree maximum path sum
+这道题还是比较有难度的，因为我们并不知道开始的结点和结束的结点。首先我们知道如果一个点的左右结点都是叶节点了，那么这时候的最大值就是left.val+right.val+root.val。但是如果不是的话，这时候就是一个根节点加上这个点的左结点或者右节点中大的那个值。我们可以这么想，return Math.max(left,right)+root.val就是在选择路径，肯定是要选择相对比较大的那一个。最后的最大路径和肯定是Math.max(res,left+right+root.val);
+private int res;
+    public int maxPathSum(TreeNode root) {
+        if(root==null) return 0;
+        res = Integer.MIN_VALUE;
+         helper(root);   
+        return res;
+    }
+    private int helper(TreeNode root){
+        if(root==null) return 0;
+        int left = Math.max(0,helper(root.left));
+        int right = Math.max(0,helper(root.right));
+        res = Math.max(res, left+right+root.val);
+        return Math.max(left,right)+root.val;
+    }
+
+317.inorder successor in bst
+we use properties of binary search tree to solve this problem.
+ private TreeNode pre = null;
+    private TreeNode after =null;
+    public TreeNode inorderSuccessor(TreeNode root, TreeNode p) {
+        if(root == null) return null;
+        helper(root,p);
+        return after;
+    }
+    private void helper(TreeNode root,TreeNode p){
+        if(root == null) return;
+        helper(root.left,p);
+        if(pre!=null && pre.val==p.val){
+            after = root;
+        }
+        pre = root;
+        helper(root.right,p);
     }
