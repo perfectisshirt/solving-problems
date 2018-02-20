@@ -7193,6 +7193,7 @@ public String largestNumber(int[] nums) {
     }
 
 254.binary search tree iterator
+因为时间复杂度是说O(h),所以就是按层遍历，那么就是bfs,这里是使用了stack,因为hasNext(）是要找到下一个最小的值，用queue就还要reverse.
 public class BSTIterator {
 
     private TreeNode cur;
@@ -8876,3 +8877,233 @@ we use properties of binary search tree to solve this problem.
         pre = root;
         helper(root.right,p);
     }
+
+318.merge two binary trees
+public TreeNode mergeTrees(TreeNode t1, TreeNode t2) {
+        if(t1==null) return t2;
+        if(t2==null) return t1;
+        TreeNode root = new TreeNode(t1.val+t2.val);
+        root.left = mergeTrees(t1.left,t2.left);
+        root.right = mergeTrees(t1.right,t2.right);
+        return root;
+    }
+
+319.serialize and deserialize binary tree
+serialize并不是很难，就是层序遍历，但是层序遍历要注意并不是按照每一层为一段进行遍历的。deserialize也差不多，是bfs的方式进行计算。
+ // Encodes a tree to a single string.
+    public String serialize(TreeNode root) {
+        if(root == null) return "";
+        StringBuilder sb = new StringBuilder();
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        while(!queue.isEmpty()){
+                TreeNode cur = queue.poll();
+            if(cur==null){
+                sb.append("null ");
+                continue;
+            }
+            
+                sb.append(cur.val+" ");
+                    queue.offer(cur.left);
+                    queue.offer(cur.right);
+                
+        }
+        return sb.toString();
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        if(data=="") return null;
+        String[] str = data.split(" ");
+        TreeNode root = new TreeNode(Integer.parseInt(str[0]));
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        
+            
+            for(int i=1;i<str.length;i++){
+                TreeNode cur = queue.poll();
+                if(!str[i].equals("null")){
+                    cur.left = new TreeNode(Integer.parseInt(str[i]));
+                    queue.offer(cur.left);
+                }
+                if(!str[++i].equals("null")){
+                    cur.right = new TreeNode(Integer.parseInt(str[i]));
+                    queue.offer(cur.right);
+                }
+            }
+        return root;
+    }
+
+320.trim binary search tree
+这题是一个递归的使用。
+public TreeNode trimBST(TreeNode root, int L, int R) {
+        if(root == null) return null;
+        if(root.val<L){
+            return trimBST(root.right,L,R);
+        }else if(root.val>R){
+            return trimBST(root.left,L,R);
+        }else{
+            root.left = trimBST(root.left,L,R);
+            root.right = trimBST(root.right,L,R);
+            return root;
+        }
+    }
+
+321.maximum binary tree
+题目的大意就是在数组中选择一个最大的数当root,然后左边的作为左子树，右边的是右子树。一看就是分治，具体做法和inorder and preorder那道题有点像。
+public TreeNode constructMaximumBinaryTree(int[] nums) {
+        return helper(nums,0,nums.length-1);
+    }
+    private TreeNode helper(int[]nums,int left,int right){
+        if(left>right) return null;
+        if(left==right){
+            return new TreeNode(nums[left]);
+        }
+        int max = left;
+        for(int i=left+1;i<=right;i++){
+            if(nums[i]>nums[max]){
+                max = i;
+            }
+        }
+        TreeNode root = new TreeNode(nums[max]);
+        root.left = helper(nums,left,max-1);
+        root.right = helper(nums,max+1,right);
+        return root;
+    }
+
+322.house robber iii
+这道题的意思是按照不同的层数进行取值，相邻的层是不能同时取的。
+public int rob(TreeNode root) {
+        if(root == null) return 0;
+        int val = 0;
+        if(root.left!=null){
+            val+=rob(root.left.left)+rob(root.left.right);
+        }
+        if(root.right!=null){
+            val+=rob(root.right.left)+rob(root.right.right);
+        }
+        return Math.max(val+root.val,rob(root.left)+rob(root.right));
+    }
+
+323.path sum iii
+也是一样的dfs。
+ public int pathSum(TreeNode root, int sum) {
+        if (root == null)
+            return 0;
+        return dfs(root, sum)+pathSum(root.left, sum)+pathSum(root.right, sum);
+    }
+
+    private int dfs(TreeNode root, int sum){
+        int res = 0;
+        if (root == null)
+            return res;
+        if (sum == root.val)
+            res++;
+        res += dfs(root.left,sum - root.val);
+        res += dfs(root.right,sum - root.val);
+        return res;
+    }
+324.binary tree longest consecutive sequence 
+private int res = 0;
+    public int longestConsecutive(TreeNode root) {
+        if (root == null) return 0;
+        helper(root,0,root.val);
+        return res;
+    }
+    private void helper(TreeNode root, int max, int target){
+        if (root == null) return;
+        if (root.val == target) {
+            max++;
+        } else {
+            max = 1;
+        }
+        res = Math.max(max,res);
+        helper(root.left,max,root.val+1);
+        helper(root.right,max,root.val+1);
+    }
+325.convert but to greater tree
+最直接的想法就是进行两遍inorder traversal.代码如下：
+private int sum = 0;
+    public TreeNode convertBST(TreeNode root) {
+        if (root == null) return null;
+        inorder(root);
+        inorderR(root);
+        return root;
+    }
+    private void inorder(TreeNode root){
+        if (root == null) return;
+        inorder(root.left);
+        sum += root.val;
+        inorder(root.right);
+    }
+    private void inorderR(TreeNode root){
+        if (root == null) return;
+        inorderR(root.left);
+        int temp = root.val;
+        root.val = sum;
+        sum -= temp;
+        inorderR(root.right);
+    }
+但是也可以直接right root left进行traversal:
+ private int sum = 0;
+    public TreeNode convertBST(TreeNode root) {
+        if (root == null) return null;
+        inorder(root);
+        return root;
+    }
+    private void inorder(TreeNode root){
+        if(root == null) return;
+        inorder(root.right);
+        sum += root.val;
+        root.val = sum;
+        inorder(root.left);
+    }
+
+326. average of levels in binary tree
+求每一层的平均数，就是简单的level traversal.
+public List<Double> averageOfLevels(TreeNode root) {
+        List<Double> res = new ArrayList<>();
+        Queue<TreeNode> queue = new LinkedList<>();
+        if (root == null) return res;
+        queue.offer(root);
+        while(!queue.isEmpty()){
+            int size = queue.size();
+            double sum = 0;
+            for(int i=0;i<size;i++){
+                TreeNode cur = queue.poll();
+                sum += cur.val;
+                if (cur.left!=null){
+                    queue.offer(cur.left);
+                }
+                if (cur.right!=null){
+                    queue.offer(cur.right);
+                }
+            }
+            res.add(sum/size);
+        }
+        return res;
+    }
+
+327.longest univalue path
+private int res = 0;
+    public int longestUnivaluePath(TreeNode root) {
+        helper(root);
+        return res;
+    }
+    private int helper(TreeNode root){
+        if (root == null) return 0;
+        int countLeft = helper(root.left);
+        int countRight = helper(root.right);
+        int left = 0;
+        int right = 0;
+        if (root.left!=null && root.val == root.left.val){
+            left = countLeft+1;
+        }
+        if (root.right!=null && root.val == root.right.val){
+            right = countRight+1;
+        }
+        res = Math.max(res,left+right);
+        return Math.max(left,right);
+    }
+
+328.
