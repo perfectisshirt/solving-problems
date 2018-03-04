@@ -9106,4 +9106,306 @@ private int res = 0;
         return Math.max(left,right);
     }
 
-328.
+328.construct string from binary tree
+这是一道典型的二叉树的遍历的题目，这里加的括号正好就是区分左右字数的区间。
+public String tree2str(TreeNode t) {
+        if (t == null) {
+            return "";
+        }
+        if (t.left == null && t.right == null) {
+            return String.valueOf(t.val);
+        }
+        if (t.left == null) {
+            return String.valueOf(t.val) + "()" + "(" + tree2str(t.right) + ")";
+        }
+        if (t.right == null) {
+            return String.valueOf(t.val) + "(" + tree2str(t.left) + ")";
+        }
+        return String.valueOf(t.val) + "(" + tree2str(t.left) + ")" + "(" + tree2str(t.right) + ")";
+    }
+
+329.serialize and deserialize bst
+可以使用之前的二叉树的解来解答。
+public String serialize(TreeNode root) {
+        if (root == null) return "";
+        StringBuilder sb = new StringBuilder();
+        Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        while(!queue.isEmpty()){
+            TreeNode cur = queue.poll();
+            if(cur==null){
+                sb.append("null ");
+                continue;
+            }
+            
+            sb.append(cur.val+" ");
+            queue.offer(cur.left);
+            queue.offer(cur.right);
+        }
+        return sb.toString();
+    }
+
+    // Decodes your encoded data to tree.
+    public TreeNode deserialize(String data) {
+        if (data == null || data.length()==0) return null; 
+        String[] str = data.split(" ");
+        TreeNode root = new TreeNode(Integer.parseInt(str[0]));
+        
+         Queue<TreeNode> queue = new LinkedList<>();
+        queue.offer(root);
+        
+            
+            for(int i=1;i<str.length;i++){
+                TreeNode cur = queue.poll();
+                if(!str[i].equals("null")){
+                    cur.left = new TreeNode(Integer.parseInt(str[i]));
+                    queue.offer(cur.left);
+                }
+                if(!str[++i].equals("null")){
+                    cur.right = new TreeNode(Integer.parseInt(str[i]));
+                    queue.offer(cur.right);
+                }
+            }
+        return root;
+    }
+
+330.print binary tree
+首先找出row和col之间的转换关系。我们发现col = (int)math.pow(2,row)-1;
+public List<List<String>> printTree(TreeNode root) {
+        int height=getHeight(root);  
+    int size=(int)Math.pow(2, height)-1;  
+    List<List<String>> result=new ArrayList<List<String>>();  
+    for(int i=0;i<height;i++){  
+        List<String> list=new ArrayList<String>();  
+        for(int j=0;j<size;j++){  
+            list.add("");  
+        }  
+        result.add(list);  
+    }  
+    helper(result, root, 0, 0, size-1);  
+    return result;  
+}  
+  
+public void helper(List<List<String>> result,TreeNode node,  
+        int level,int left,int right){  
+    if(node==null){  
+        return;  
+    }  
+    int index=(left+right)/2;  
+    result.get(level).set(index, node.val+"");  
+    helper(result, node.left, level+1, left, index-1);  
+    helper(result, node.right, level+1, index+1, right);  
+}  
+  
+public int getHeight(TreeNode node){  
+    if(node==null){  
+        return 0;  
+    }  
+    return Math.max(1+getHeight(node.left), 1+getHeight(node.right)); 
+    }
+
+331.delete node in a bst
+
+332.find mode in binary search tree
+其实就是求出现次数最多的数，因为实在bst中，所以左根右的顺序是有序的，可以利用recursion的方法来解。我们使用一个临时空间，list来存储可能是最大的数。其实如果没有空间上的限制的话，最先想到的解法是hashmap.
+private int count = -1;
+    private int lastValue = Integer.MAX_VALUE;
+    private int maxCount = 0;
+    private List<Integer> list = new ArrayList<>();
+    public int[] findMode(TreeNode root) {
+        helper(root);
+        if (count > maxCount) {
+            list.clear();
+            list.add(lastValue);
+        } else if (count == maxCount) {
+            list.add(lastValue);
+        }
+        int[] res = new int[list.size()];
+        for(int i=0;i<res.length;i++){
+            res[i] = list.get(i);
+        }
+        return res;
+    }
+    private void helper(TreeNode root){
+        if (root == null) return;
+        helper(root.left);
+        if (root.val!=lastValue){
+            if (count>maxCount){
+                maxCount = count;
+                list.clear();
+                list.add(lastValue);
+            }else if (count == maxCount) {
+                list.add(lastValue);
+            }
+            count = 1;
+            lastValue = root.val;
+        } else {
+            count++;
+        }
+        helper(root.right);
+    }
+
+333.largest bst subtree
+这道题是说在一个二叉树中找到节点数最多的二叉搜索树，之前我们对于一个树是不是搜索二叉树有一个判断题，一个直接的算法就是将每一个点都当成是根节点对其进行判断是不是二叉搜索树，是的话就统计其节点数。但是这里要求使用O(n)的时间复杂度，对于一个二叉搜索树也可以使用size,lower,upper这几个参数进行判断。
+int res = 0;
+    class SearchNode {
+        int size;
+        int lower;
+        int upper;
+        public SearchNode(int size, int lower, int upper){
+            this.size = size;
+            this.lower = lower;
+            this.upper = upper;
+        }
+    }
+    
+    public int largestBSTSubtree(TreeNode root) {
+        if (root == null) return 0;
+        helper(root);
+        return res;
+    }
+    
+    private SearchNode helper(TreeNode root){
+        if (root == null) return new SearchNode(0, Integer.MAX_VALUE, Integer.MIN_VALUE);
+        SearchNode left = helper(root.left);
+        SearchNode right = helper(root.right);
+        if (left.size == -1 || right.size == -1 || root.val <= left.upper || root.val >= right.lower) {
+            return new SearchNode(-1,0,0);
+        }
+        int size = left.size + right.size +1;
+        res = Math.max(size,res);
+        return new SearchNode(size,Math.min(left.lower,root.val),Math.max(right.upper,root.val));
+    }
+
+334. rotate image
+public void rotate(int[][] matrix) {
+        if (matrix == null || matrix.length == 0 || matrix[0].length == 0) {
+            return;
+        }
+        
+        int n = matrix.length;
+        //row i become n-i-1 (i,j)->(n-i-1,n-j-1)
+        for(int i = 0; i < n-1; i++) {
+            for(int j = 0; j < n-i; j++) {
+                swap(matrix,i,j,n);
+            }
+        }   
+        
+        for(int i = 0; i < n/2; i++) {
+            for(int j = 0; j < n; j++) {
+                swapRow(matrix,i,j,n);
+            }
+        }
+    }
+    
+    private void swap(int[][] matrix, int i, int j, int n) {
+        int temp = matrix[i][j];
+        matrix[i][j] = matrix[n-j-1][n-i-1];
+        matrix[n-j-1][n-i-1] = temp;
+    }
+    
+    private void swapRow(int[][] matrix, int i, int j, int n) {
+        int temp = matrix[i][j];
+        matrix[i][j] = matrix[n-i-1][j];
+        matrix[n-i-1][j] = temp;
+    }
+
+335.insert interval
+we just add the new one that should be sorted to the list, then we merge it.
+public List<Interval> insert(List<Interval> intervals, Interval newInterval) {
+        intervals.add(newInterval);
+        return merge(intervals);
+    }
+    
+    public List<Interval> merge(List<Interval> intervals) {
+        List<Interval> res = new ArrayList<>();
+        if(intervals==null || intervals.size()<1){
+            return res;
+        }
+        Collections.sort(intervals,(a,b)->(a.start-b.start));
+        int start = intervals.get(0).start;
+        int end = intervals.get(0).end;
+        for(Interval i:intervals){
+            if(i.start<=end){
+                end = Math.max(end,i.end);
+            }else{
+                res.add(new Interval(start,end));
+                start = i.start;
+                end = i.end;
+            }
+        }
+        res.add(new Interval(start,end));
+        return res;
+    }
+
+336.text justification
+this is a coding come true problem. we just have to complete it row by row. We have to notice that when we count string’s length we should add 1 for space between two strings.
+public List<String> fullJustify(String[] words, int maxWidth) {
+        List<String> res = new ArrayList<>();
+        int index = 0;
+        while (index < words.length) {
+            int count = words[index].length();
+            int last = index + 1;
+            while (last < words.length) {
+                if (count + 1 + words[last].length() > maxWidth) break;
+                count += 1 + words[last].length();
+                last++;
+            }
+            StringBuilder sb =  new StringBuilder();
+            sb.append(words[index]);
+            int diff = last - index - 1;
+            if (last == words.length || diff == 0) {
+                for (int i = index + 1; i < last; i++) {
+                    sb.append(" ");
+                    sb.append(words[i]);
+                }
+                for (int i = sb.length(); i < maxWidth; i++) {
+                    sb.append(" ");
+                }
+            } else {
+                int spaces = (maxWidth - count) / diff;
+                int offset = (maxWidth - count) % diff;
+                for (int i = index + 1; i < last; ++i) {
+                    for (int j = spaces; j > 0; j--) {
+                        sb.append(" ");
+                    }
+                    if (offset > 0) {
+                        sb.append(" ");
+                        offset--;
+                    }
+                    sb.append(" ");
+                    sb.append(words[i]);
+                }
+            }
+            res.add(sb.toString());
+            index = last;
+        }
+        return res;
+    }
+
+337. longest consecutive sequence
+extend from mid to both sides
+public int longestConsecutive(int[] nums) {
+        if (nums == null || nums.length == 0) {
+            return 0;
+        }
+        HashSet<Integer> hs = new HashSet<>();
+        for (int i = 0; i < nums.length; i++) {
+            hs.add(nums[i]);
+        }
+        int res = 0;
+        for (int i = 0; i < nums.length; i++) {
+            int down = nums[i] - 1;
+            while (hs.contains(down)) {
+                hs.remove(down);
+                down--;
+            }
+            int up = nums[i] + 1;
+            while (hs.contains(up)) {
+                hs.remove(up);
+                up++;
+            }
+            res = Math.max(res, up - down - 1);
+        }
+        return res;
+    }
